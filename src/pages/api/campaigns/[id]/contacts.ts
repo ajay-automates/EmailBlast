@@ -16,7 +16,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method !== 'POST') {
+  if (req.method !== 'POST' && req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
@@ -40,7 +40,19 @@ export default async function handler(
       return res.status(403).json({ error: 'Campaign not found or unauthorized' })
     }
 
-    // Parse CSV from body (assuming base64 encoded)
+    // Handle GET: List contacts
+    if (req.method === 'GET') {
+      const { data: contacts, error: contactsError } = await supabase
+        .from('contacts')
+        .select('*')
+        .eq('campaign_id', id)
+        .order('imported_at', { ascending: false })
+
+      if (contactsError) throw contactsError
+      return res.json(contacts)
+    }
+
+    // Handle POST: Upload CSV
     const csvData = req.body.csvData
     if (!csvData) {
       return res.status(400).json({ error: 'No CSV data provided' })
@@ -78,7 +90,7 @@ export default async function handler(
 
         if (insertError) throw insertError
 
-        res.json({ 
+        res.json({
           imported: contacts.length,
           message: `Successfully imported ${contacts.length} contacts`
         })
@@ -88,7 +100,7 @@ export default async function handler(
         res.status(400).json({ error: 'Failed to parse CSV' })
       })
   } catch (error: any) {
-    console.error('Upload contacts error:', error)
+    console.error('Contacts API error:', error)
     res.status(500).json({ error: error.message })
   }
 }

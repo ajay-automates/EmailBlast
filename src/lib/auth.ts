@@ -2,19 +2,12 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { supabase } from './supabase'
 
 export async function getAuthUser(req: NextApiRequest) {
-  const token = req.headers.authorization?.split('Bearer ')[1]
-  
-  if (!token) {
-    throw new Error('No authorization token')
+  // TODO: Re-enable real auth when login pages are built (Week 9-10)
+  // For now, return a mock user to allow testing the app
+  return {
+    id: '11111111-1111-1111-1111-111111111111',
+    email: 'test@example.com'
   }
-
-  const { data: { user }, error } = await supabase.auth.getUser(token)
-  
-  if (error || !user) {
-    throw new Error('Invalid token')
-  }
-
-  return user
 }
 
 export async function requireAuth(

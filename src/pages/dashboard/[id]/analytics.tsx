@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
-import '../../../styles/globals.css'
+
 
 interface Analytics {
   totalSent: number
@@ -146,7 +146,7 @@ export default function CampaignAnalytics() {
         {/* Detailed Stats */}
         <div className="card mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">📊 Detailed Performance</h2>
-          
+
           <div className="space-y-6">
             {/* Open Rate */}
             <div>

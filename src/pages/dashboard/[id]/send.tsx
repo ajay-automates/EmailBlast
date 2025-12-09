@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
-import '../../../styles/globals.css'
+
 
 interface EmailVariation {
   id: string
@@ -36,14 +36,14 @@ export default function SendEmails() {
     try {
       setLoading(true)
       const token = localStorage.getItem('auth_token')
-      
+
       // Get contacts for this campaign
       const contactsRes = await fetch(`/api/campaigns/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
-      
+
       if (contactsRes.ok) {
         const campaign = await contactsRes.json()
         // For now, we'll fetch from a variations endpoint
@@ -105,7 +105,7 @@ export default function SendEmails() {
 
       const data = await res.json()
       setStatus(`✅ ${data.message}`)
-      
+
       // Redirect to analytics after 2 seconds
       setTimeout(() => {
         router.push(`/dashboard/${id}/analytics`)
@@ -197,11 +197,10 @@ export default function SendEmails() {
             {variations.map((variation) => (
               <div
                 key={variation.id}
-                className={`border rounded-lg p-4 cursor-pointer transition ${
-                  selectedVariations.has(variation.id)
+                className={`border rounded-lg p-4 cursor-pointer transition ${selectedVariations.has(variation.id)
                     ? 'border-blue-500 bg-blue-50'
                     : 'border-gray-200 hover:border-gray-300'
-                }`}
+                  }`}
               >
                 <div className="flex gap-4">
                   <input

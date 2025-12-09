@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
-import '../../../styles/globals.css'
+
 
 interface PreviewContact {
   first_name: string
@@ -63,7 +63,7 @@ export default function UploadContacts() {
   const handleFile = (selectedFile: File) => {
     setError('')
     setSuccess('')
-    
+
     if (!selectedFile.name.endsWith('.csv')) {
       setError('Please upload a CSV file')
       return
@@ -71,13 +71,13 @@ export default function UploadContacts() {
 
     setFile(selectedFile)
     const reader = new FileReader()
-    
+
     reader.onload = (e) => {
       try {
         const text = e.target?.result as string
         const contacts = parseCSV(text)
         setPreview(contacts.slice(0, 10)) // Show first 10
-        
+
         if (contacts.length > 10) {
           setSuccess(`Parsed ${contacts.length} contacts. Showing first 10 preview.`)
         } else {
@@ -89,7 +89,7 @@ export default function UploadContacts() {
         setPreview([])
       }
     }
-    
+
     reader.readAsText(selectedFile)
   }
 
@@ -107,7 +107,7 @@ export default function UploadContacts() {
     e.preventDefault()
     e.stopPropagation()
     setDragActive(false)
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFile(e.dataTransfer.files[0])
     }
@@ -122,10 +122,10 @@ export default function UploadContacts() {
     try {
       setUploading(true)
       setError('')
-      
+
       const text = await file.text()
       const base64 = Buffer.from(text).toString('base64')
-      
+
       const token = localStorage.getItem('auth_token')
       const res = await fetch(`/api/campaigns/${id}/contacts`, {
         method: 'POST',
@@ -142,7 +142,7 @@ export default function UploadContacts() {
 
       const data = await res.json()
       setSuccess(`Successfully imported ${data.imported} contacts!`)
-      
+
       // Redirect after 2 seconds
       setTimeout(() => {
         router.push(`/dashboard/${id}`)
@@ -156,13 +156,15 @@ export default function UploadContacts() {
 
   const downloadTemplate = () => {
     const template = 'first_name,last_name,email,company,position\nJohn,Doe,john@example.com,Acme Inc,Software Engineer\nJane,Smith,jane@example.com,Tech Corp,Product Manager'
-    const element = document.createElement('a')
-    element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(template))
-    element.setAttribute('download', 'contacts_template.csv')
-    element.style.display = 'none'
-    document.body.appendChild(element)
-    element.click()
-    document.body.removeChild(element)
+    const blob = new Blob([template], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'contacts_template.csv'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    window.URL.revokeObjectURL(url)
   }
 
   return (
@@ -182,11 +184,10 @@ export default function UploadContacts() {
             onDragLeave={handleDrag}
             onDragOver={handleDrag}
             onDrop={handleDrop}
-            className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition ${
-              dragActive
-                ? 'border-blue-500 bg-blue-50'
-                : 'border-gray-300 hover:border-gray-400'
-            }`}
+            className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition ${dragActive
+              ? 'border-blue-500 bg-blue-50'
+              : 'border-gray-300 hover:border-gray-400'
+              }`}
           >
             <input
               type="file"

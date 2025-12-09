@@ -1,10 +1,10 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { supabase } from '@/lib/supabase'
 import { getAuthUser } from '@/lib/auth'
-import OpenAI from 'openai'
+import Anthropic from '@anthropic-ai/sdk'
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
 })
 
 export const config = {
@@ -28,6 +28,8 @@ export default async function handler(
       return res.status(400).json({ error: 'Invalid campaign ID' })
     }
 
+    console.log(`[Generate] Request received for campaign ${id} with ${contactIds?.length} contacts`)
+
     // Verify campaign ownership
     const { data: campaign, error: campaignError } = await supabase
       .from('campaigns')
@@ -37,6 +39,7 @@ export default async function handler(
       .single()
 
     if (campaignError || !campaign) {
+      console.error('[Generate] Campaign error:', campaignError)
       return res.status(403).json({ error: 'Campaign not found or unauthorized' })
     }
 
@@ -47,16 +50,21 @@ export default async function handler(
       .in('id', contactIds || [])
 
     if (contactsError || !contacts || contacts.length === 0) {
+      console.error('[Generate] No contacts found:', contactsError)
       return res.status(400).json({ error: 'No contacts found' })
     }
 
+    console.log(`[Generate] Processing ${contacts.length} contacts`)
     let generated = 0
 
     for (const contact of contacts) {
+      console.log(`[Generate] Generating for contact ${contact.email}`)
       // Generate 5 variations per contact
       for (let i = 1; i <= 5; i++) {
         try {
-          const prompt = `You are an expert cold email copywriter. Generate a personalized cold email variation #${i}.
+          const systemPrompt = `You are an expert cold email copywriter. Your goal is to generate high-converting cold email variations.`
+
+          const userPrompt = `Generate personalized cold email variation #${i}.
 
 Context: ${campaign.context}
 Recipient: ${contact.first_name} ${contact.last_name}
@@ -71,21 +79,31 @@ Requirements:
 - Sound natural, not templated
 - Variation #${i} should have a DIFFERENT angle/hook than others
 
-Return ONLY valid JSON:
+Return ONLY valid JSON in this format:
 {
-  "subject": "...",
-  "body": "..."
+  "subject": "Email Subject",
+  "body": "Email Body Content"
 }`
 
-          const message = await openai.chat.completions.create({
-            model: 'gpt-4',
-            messages: [{ role: 'user', content: prompt }],
-            temperature: 0.7,
-            max_tokens: 300,
+          console.log(`[Generate] Calling Anthropic for var ${i}...`)
+          const message = await anthropic.messages.create({
+            model: 'claude-3-haiku-20240307',
+            max_tokens: 1024,
+            system: systemPrompt,
+            messages: [{ role: 'user', content: userPrompt }],
           })
 
-          const content = message.choices[0].message.content
-          if (!content) throw new Error('No response from OpenAI')
+          // Extract text content safely
+          const contentBlock = message.content[0]
+
+          if (!contentBlock || contentBlock.type !== 'text') {
+            throw new Error('No text response from Claude')
+          }
+
+          let content = contentBlock.text
+
+          // Clean up potential markdown code blocks if Claude adds them
+          content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '')
 
           const parsed = JSON.parse(content)
 
@@ -106,8 +124,9 @@ Return ONLY valid JSON:
             })
 
           generated++
+          console.log(`[Generate] Success var ${i}`)
         } catch (error) {
-          console.error(`Error generating variation ${i} for contact ${contact.id}:`, error)
+          console.error(`[Generate] Error generating variation ${i} for contact ${contact.id}:`, error)
         }
       }
     }
@@ -117,7 +136,7 @@ Return ONLY valid JSON:
       message: `Generated ${generated} email variations`,
     })
   } catch (error: any) {
-    console.error('Generate variations error:', error)
+    console.error('[Generate] Fatal error:', error)
     res.status(500).json({ error: error.message })
   }
 }

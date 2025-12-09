@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import '../styles/globals.css'
+
 
 interface Campaign {
   id: string
@@ -90,12 +90,17 @@ export default function Dashboard() {
       <div className="max-w-6xl mx-auto p-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900">Email Campaigns</h1>
-          <button
-            onClick={createNewCampaign}
-            className="btn-primary"
-          >
-            + New Campaign
-          </button>
+          <div className="flex gap-4">
+            <Link href="/dashboard/sent" className="btn-secondary flex items-center">
+              📨 Sent History
+            </Link>
+            <button
+              onClick={createNewCampaign}
+              className="btn-primary"
+            >
+              + New Campaign
+            </button>
+          </div>
         </div>
 
         {campaigns.length === 0 ? (

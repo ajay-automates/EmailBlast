@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
-import '../../../styles/globals.css'
+
 
 interface EmailVariation {
   id: string
@@ -59,7 +59,14 @@ export default function GenerateEmails() {
         })
         if (contactsRes.ok) {
           const contactsData = await contactsRes.json()
-          setContacts(contactsData)
+
+          // Filter by selected contacts if query param exists
+          const selectedIds = (router.query.contacts as string)?.split(',')
+          if (selectedIds && selectedIds.length > 0) {
+            setContacts(contactsData.filter((c: Contact) => selectedIds.includes(c.id)))
+          } else {
+            setContacts(contactsData)
+          }
         }
       }
     } catch (error) {
@@ -80,7 +87,7 @@ export default function GenerateEmails() {
       setGenerating(true)
       setError('')
       setStatus('Generating email variations...')
-      
+
       const token = localStorage.getItem('auth_token')
       const res = await fetch(`/api/campaigns/${id}/generate`, {
         method: 'POST',
@@ -99,7 +106,7 @@ export default function GenerateEmails() {
 
       const data = await res.json()
       setStatus(`✅ Generated ${data.generated} email variations!`)
-      
+
       // Wait a moment then redirect to send page
       setTimeout(() => {
         router.push(`/dashboard/${id}/send`)

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
-import '../../../styles/globals.css'
+
 
 interface Campaign {
   id: string
@@ -11,12 +11,14 @@ interface Campaign {
   status: string
 }
 
+
 interface Contact {
   id: string
   first_name: string
   last_name: string
   email: string
   company: string
+  position: string
 }
 
 export default function CampaignDetail() {
@@ -24,6 +26,7 @@ export default function CampaignDetail() {
   const { id } = router.query
   const [campaign, setCampaign] = useState<Campaign | null>(null)
   const [contacts, setContacts] = useState<Contact[]>([])
+  const [selectedContactIds, setSelectedContactIds] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [name, setName] = useState('')
@@ -104,6 +107,29 @@ export default function CampaignDetail() {
     }
   }
 
+  const toggleSelectAll = () => {
+    if (selectedContactIds.length === contacts.length) {
+      setSelectedContactIds([])
+    } else {
+      setSelectedContactIds(contacts.map(c => c.id))
+    }
+  }
+
+  const toggleSelect = (contactId: string) => {
+    if (selectedContactIds.includes(contactId)) {
+      setSelectedContactIds(selectedContactIds.filter(id => id !== contactId))
+    } else {
+      setSelectedContactIds([...selectedContactIds, contactId])
+    }
+  }
+
+  const getActionUrl = (base: string) => {
+    if (selectedContactIds.length > 0) {
+      return `${base}?contacts=${selectedContactIds.join(',')}`
+    }
+    return base
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -173,13 +199,30 @@ export default function CampaignDetail() {
 
         <div className="card">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Contacts ({contacts.length})</h2>
-            <Link
-              href={`/dashboard/${id}/upload`}
-              className="btn-primary"
-            >
-              Import CSV
-            </Link>
+            <h2 className="text-2xl font-bold text-gray-900">
+              Contacts ({contacts.length})
+              {selectedContactIds.length > 0 && <span className="text-sm font-normal text-blue-600 ml-2">({selectedContactIds.length} selected)</span>}
+            </h2>
+            <div className="flex gap-3">
+              <Link
+                href={getActionUrl(`/dashboard/${id}/generate`)}
+                className="btn-secondary"
+              >
+                🪄 Generate Emails
+              </Link>
+              <Link
+                href={getActionUrl(`/dashboard/${id}/send`)}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
+              >
+                🚀 Send Campaign
+              </Link>
+              <Link
+                href={`/dashboard/${id}/upload`}
+                className="btn-primary"
+              >
+                Import CSV
+              </Link>
+            </div>
           </div>
 
           {contacts.length === 0 ? (
@@ -189,6 +232,14 @@ export default function CampaignDetail() {
               <table className="w-full">
                 <thead className="bg-gray-100">
                   <tr>
+                    <th className="px-4 py-2 text-left w-10">
+                      <input
+                        type="checkbox"
+                        checked={contacts.length > 0 && selectedContactIds.length === contacts.length}
+                        onChange={toggleSelectAll}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                    </th>
                     <th className="px-4 py-2 text-left">Name</th>
                     <th className="px-4 py-2 text-left">Email</th>
                     <th className="px-4 py-2 text-left">Company</th>
@@ -197,7 +248,15 @@ export default function CampaignDetail() {
                 </thead>
                 <tbody>
                   {contacts.map((contact) => (
-                    <tr key={contact.id} className="border-b hover:bg-gray-50">
+                    <tr key={contact.id} className={`border-b hover:bg-gray-50 ${selectedContactIds.includes(contact.id) ? 'bg-blue-50' : ''}`}>
+                      <td className="px-4 py-2">
+                        <input
+                          type="checkbox"
+                          checked={selectedContactIds.includes(contact.id)}
+                          onChange={() => toggleSelect(contact.id)}
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                      </td>
                       <td className="px-4 py-2">{contact.first_name} {contact.last_name}</td>
                       <td className="px-4 py-2 text-blue-600">{contact.email}</td>
                       <td className="px-4 py-2">{contact.company}</td>
