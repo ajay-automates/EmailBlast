@@ -128,82 +128,120 @@ export default function GenerateEmails() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto p-8">
-        <Link href={`/dashboard/${id}`} className="text-blue-600 hover:text-blue-800 mb-4 inline-block">
-          ← Back to Campaign
+    <div className="min-h-screen bg-aurora text-apple-text pb-20 selection:bg-purple-500/20">
+      {/* Apple-style Glass Navigation */}
+      <nav className="sticky top-0 z-50 glass">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3 hover-lift">
+            <div className="w-9 h-9 bg-black rounded-xl text-white flex items-center justify-center font-bold text-lg shadow-lg shadow-black/10">E</div>
+            <span className="font-semibold text-xl tracking-tight text-gray-900">EmailBlast</span>
+          </div>
+          <div className="flex items-center gap-8 text-sm font-medium text-gray-500">
+            <Link href="/dashboard" className="hover:text-primary transition-colors">Campaigns</Link>
+            <Link href="/dashboard/sent" className="hover:text-primary transition-colors">History</Link>
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 shadow-inner" />
+          </div>
+        </div>
+      </nav>
+
+      <div className="max-w-5xl mx-auto px-6 pt-10 animate-[fadeIn_0.5s_ease-out]">
+        <Link href={`/dashboard/${id}`} className="text-secondary hover:text-primary transition-colors text-sm font-medium mb-8 inline-flex items-center gap-1 group">
+          <span className="group-hover:-translate-x-1 transition-transform">←</span> Back to Campaign
         </Link>
 
-        <div className="card">
-          <h1 className="text-3xl font-bold mb-2 text-gray-900">Generate Email Variations</h1>
-          <p className="text-gray-600 mb-8">AI will generate 5 personalized email variations for each contact</p>
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900 tracking-tight mb-2">Generate Emails</h1>
+            <p className="text-secondary text-lg">AI will craft personalized variations for your audience.</p>
+          </div>
+        </div>
 
-          {/* Status */}
-          {error && (
-            <div className="mb-6 p-4 bg-red-100 text-red-700 rounded-lg">
-              ⚠️ {error}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="glass-card p-10">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Summary</h2>
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="p-6 bg-blue-50/50 rounded-2xl border border-blue-100">
+                  <div className="text-4xl font-bold text-primary mb-1">{contacts.length}</div>
+                  <div className="text-sm font-medium text-gray-600">Recipients Selected</div>
+                </div>
+                <div className="p-6 bg-purple-50/50 rounded-2xl border border-purple-100">
+                  <div className="text-4xl font-bold text-purple-600 mb-1">{contacts.length * 5}</div>
+                  <div className="text-sm font-medium text-gray-600">Total Emails (5x each)</div>
+                </div>
+              </div>
+
+              {/* Status Messages */}
+              {error && (
+                <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-xl border border-red-100 flex items-center gap-3">
+                  <span className="text-xl">⚠️</span> {error}
+                </div>
+              )}
+
+              {status && (
+                <div className="mb-6 p-4 bg-green-50 text-green-700 rounded-xl border border-green-100 flex items-center gap-3">
+                  <span className="text-xl">✅</span> {status}
+                </div>
+              )}
+
+              {/* AI Capabilities */}
+              <div className="mb-8">
+                <h3 className="font-semibold text-gray-900 mb-4">What happens next?</h3>
+                <ul className="space-y-3">
+                  {[
+                    'Analyzes contact data (Name, Company, Position)',
+                    'Crafts 5 unique variations per contact',
+                    'Optimizes for high open-rates and replies',
+                    'Prepares draft queue for your review'
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-center gap-3 text-secondary text-sm">
+                      <div className="w-5 h-5 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-[10px] font-bold">✓</div>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="pt-6 border-t border-gray-100/50 flex gap-4">
+                <button
+                  onClick={generateVariations}
+                  disabled={generating || contacts.length === 0}
+                  className="btn-primary flex-1 h-12 text-lg shadow-blue-500/20"
+                >
+                  {generating ? '✨ Generating Magic...' : 'Start Generation'}
+                </button>
+                <button
+                  onClick={() => router.push(`/dashboard/${id}`)}
+                  disabled={generating}
+                  className="btn-secondary h-12 px-8"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
-          )}
+          </div>
 
-          {status && (
-            <div className="mb-6 p-4 bg-green-100 text-green-700 rounded-lg">
-              {status}
+          {/* Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="glass-card p-6 bg-yellow-50/30 border-yellow-100/50">
+              <div className="flex items-center gap-2 mb-4 text-yellow-700 font-bold">
+                <span className="text-xl">💡</span> Pro Tips
+              </div>
+              <ul className="space-y-4 text-sm text-gray-600">
+                <li className="leading-relaxed">
+                  <strong>Context is key:</strong> Ensure your campaign context clearly explains your value proposition for the best AI results.
+                </li>
+                <li className="leading-relaxed">
+                  <strong>Review process:</strong> You'll have a chance to review all generated emails before they are actually sent.
+                </li>
+                <li className="leading-relaxed">
+                  <strong>Time estimate:</strong> It typically takes about 2 seconds per contact to generate high-quality personalized drafts.
+                </li>
+              </ul>
             </div>
-          )}
-
-          {/* Contacts Summary */}
-          <div className="mb-8 p-6 bg-blue-50 rounded-lg">
-            <h2 className="font-bold text-gray-900 mb-2">📊 Generation Summary</h2>
-            <p className="text-gray-700">
-              <strong>{contacts.length}</strong> contacts selected
-            </p>
-            <p className="text-gray-700">
-              <strong>{contacts.length * 5}</strong> email variations will be generated (5 per contact)
-            </p>
-            <p className="text-gray-700 text-sm mt-2">
-              ⏱️ Estimated time: {Math.ceil(contacts.length * 2 / 60)} minutes
-            </p>
-          </div>
-
-          {/* What the AI will do */}
-          <div className="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
-            <h3 className="font-bold text-gray-900 mb-4">🤖 AI Will:</h3>
-            <ul className="space-y-2 text-gray-700 text-sm">
-              <li>✅ Personalize with contact name, company, and position</li>
-              <li>✅ Create 5 unique variations with different angles/hooks</li>
-              <li>✅ Keep emails concise (50-100 words)</li>
-              <li>✅ Include clear calls-to-action</li>
-              <li>✅ Sound natural and non-templated</li>
-            </ul>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex gap-4">
-            <button
-              onClick={generateVariations}
-              disabled={generating || contacts.length === 0}
-              className="btn-primary"
-            >
-              {generating ? '⏳ Generating...' : '🚀 Start Generation'}
-            </button>
-            <button
-              onClick={() => router.push(`/dashboard/${id}`)}
-              disabled={generating}
-              className="btn-secondary"
-            >
-              Cancel
-            </button>
-          </div>
-
-          {/* Tips */}
-          <div className="mt-12 p-6 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <h3 className="font-bold text-gray-900 mb-2">💡 Tips for Best Results</h3>
-            <ul className="text-sm text-gray-700 space-y-2">
-              <li>📝 <strong>Clear Context:</strong> In campaign settings, write clear context about what you're offering</li>
-              <li>🎯 <strong>Specific Audience:</strong> Target emails work better than generic ones</li>
-              <li>✍️ <strong>Subject Line Template:</strong> Use variables like {"{firstName}"} in subject line</li>
-              <li>⏱️ <strong>Wait Time:</strong> Generation takes ~2 seconds per contact</li>
-            </ul>
           </div>
         </div>
       </div>

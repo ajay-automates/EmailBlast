@@ -168,25 +168,42 @@ export default function UploadContacts() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto p-8">
-        <Link href={`/dashboard/${id}`} className="text-blue-600 hover:text-blue-800 mb-4 inline-block">
-          ← Back to Campaign
+    <div className="min-h-screen bg-aurora text-apple-text pb-20 selection:bg-purple-500/20">
+      {/* Apple-style Glass Navigation */}
+      <nav className="sticky top-0 z-50 glass">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3 hover-lift">
+            <div className="w-9 h-9 bg-black rounded-xl text-white flex items-center justify-center font-bold text-lg shadow-lg shadow-black/10">E</div>
+            <span className="font-semibold text-xl tracking-tight text-gray-900">EmailBlast</span>
+          </div>
+          <div className="flex items-center gap-8 text-sm font-medium text-gray-500">
+            <Link href="/dashboard" className="hover:text-primary transition-colors">Campaigns</Link>
+            <Link href="/dashboard/sent" className="hover:text-primary transition-colors">History</Link>
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 shadow-inner" />
+          </div>
+        </div>
+      </nav>
+
+      <div className="max-w-3xl mx-auto px-6 pt-10 animate-[fadeIn_0.5s_ease-out]">
+        <Link href={`/dashboard/${id}`} className="text-secondary hover:text-primary transition-colors text-sm font-medium mb-8 inline-flex items-center gap-1 group">
+          <span className="group-hover:-translate-x-1 transition-transform">←</span> Back to Campaign
         </Link>
 
-        <div className="card">
-          <h1 className="text-3xl font-bold mb-2 text-gray-900">Import Contacts</h1>
-          <p className="text-gray-600 mb-8">Upload a CSV file with your contact list</p>
+        <div className="mb-10 text-center">
+          <h1 className="text-4xl font-bold text-gray-900 tracking-tight mb-2">Import Contacts</h1>
+          <p className="text-secondary text-lg">Upload your CSV to build your audience.</p>
+        </div>
 
+        <div className="glass-card p-10">
           {/* Upload Area */}
           <div
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
             onDragOver={handleDrag}
             onDrop={handleDrop}
-            className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition ${dragActive
-              ? 'border-blue-500 bg-blue-50'
-              : 'border-gray-300 hover:border-gray-400'
+            className={`group border-2 border-dashed rounded-2xl p-16 text-center cursor-pointer transition-all duration-300 ${dragActive
+              ? 'border-primary bg-blue-50/50 scale-[1.01]'
+              : 'border-gray-200 hover:border-primary/50 hover:bg-gray-50/50'
               }`}
           >
             <input
@@ -197,62 +214,68 @@ export default function UploadContacts() {
               id="csv-upload"
             />
             <label htmlFor="csv-upload" className="block cursor-pointer">
-              <div className="text-4xl mb-2">📁</div>
-              <div className="text-lg font-semibold text-gray-900 mb-1">
-                Drag CSV file here or click to browse
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-6 shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform duration-300 text-white">
+                📁
               </div>
-              <p className="text-gray-500 text-sm">
-                {file ? `Selected: ${file.name}` : 'CSV format with headers: first_name, last_name, email, company, position'}
+              <div className="text-xl font-bold text-gray-900 mb-2">
+                Drag CSV file here
+              </div>
+              <p className="text-secondary text-sm">
+                {file ? <span className="text-primary font-medium">{file.name}</span> : 'or click to browse from your computer'}
               </p>
             </label>
           </div>
 
           {/* Download Template */}
-          <div className="mt-4 text-center">
+          <div className="mt-6 text-center">
             <button
               onClick={downloadTemplate}
-              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+              className="text-primary hover:text-blue-700 text-sm font-medium inline-flex items-center gap-2 px-4 py-2 rounded-full hover:bg-blue-50 transition-all"
             >
-              📥 Download CSV Template
+              <span>📥</span> Download CSV Template
             </button>
           </div>
 
           {/* Errors & Success */}
           {error && (
-            <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
-              ⚠️ {error}
+            <div className="mt-8 p-4 bg-red-50/80 backdrop-blur-sm text-red-700 rounded-2xl text-sm border border-red-100 flex items-center gap-3">
+              <span className="text-xl">⚠️</span> {error}
             </div>
           )}
 
           {success && (
-            <div className="mt-4 p-3 bg-green-100 text-green-700 rounded-lg text-sm">
-              ✅ {success}
+            <div className="mt-8 p-4 bg-green-50/80 backdrop-blur-sm text-green-700 rounded-2xl text-sm border border-green-100 flex items-center gap-3">
+              <span className="text-xl">✅</span> {success}
             </div>
           )}
 
           {/* Preview Table */}
           {preview.length > 0 && (
-            <div className="mt-8">
-              <h2 className="text-lg font-bold mb-4 text-gray-900">Preview ({preview.length} of {preview.length})</h2>
-              <div className="overflow-x-auto">
+            <div className="mt-10 animate-[fadeIn_0.5s_ease-out]">
+              <div className="flex justify-between items-end mb-4">
+                <h2 className="text-lg font-bold text-gray-900">Preview</h2>
+                <span className="text-xs font-mono text-secondary px-2 py-1 bg-gray-100 rounded-md">Showing {preview.length} rows</span>
+              </div>
+
+              <div className="overflow-hidden rounded-xl border border-gray-200/60 shadow-sm">
                 <table className="w-full text-sm">
-                  <thead className="bg-gray-100">
+                  <thead className="bg-gray-50/50 backdrop-blur-sm text-secondary font-semibold border-b border-gray-200">
                     <tr>
-                      <th className="px-4 py-2 text-left">First Name</th>
-                      <th className="px-4 py-2 text-left">Last Name</th>
-                      <th className="px-4 py-2 text-left">Email</th>
-                      <th className="px-4 py-2 text-left">Company</th>
-                      <th className="px-4 py-2 text-left">Position</th>
+                      <th className="px-4 py-3 text-left">First Name</th>
+                      <th className="px-4 py-3 text-left">Last Name</th>
+                      <th className="px-4 py-3 text-left">Email</th>
+                      <th className="px-4 py-3 text-left">Company</th>
+                      <th className="px-4 py-3 text-left">Position</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="bg-white/50 divide-y divide-gray-100">
                     {preview.map((contact, idx) => (
-                      <tr key={idx} className="border-b hover:bg-gray-50">
-                        <td className="px-4 py-2">{contact.first_name}</td>
-                        <td className="px-4 py-2">{contact.last_name}</td>
-                        <td className="px-4 py-2 text-blue-600 text-xs">{contact.email}</td>
-                        <td className="px-4 py-2 text-sm">{contact.company}</td>
-                        <td className="px-4 py-2 text-sm">{contact.position}</td>
+                      <tr key={idx} className="hover:bg-blue-50/20 transition-colors">
+                        <td className="px-4 py-3 font-medium text-gray-900">{contact.first_name}</td>
+                        <td className="px-4 py-3 font-medium text-gray-900">{contact.last_name}</td>
+                        <td className="px-4 py-3 text-primary">{contact.email}</td>
+                        <td className="px-4 py-3 text-secondary">{contact.company}</td>
+                        <td className="px-4 py-3 text-secondary">{contact.position}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -260,13 +283,13 @@ export default function UploadContacts() {
               </div>
 
               {/* Upload Button */}
-              <div className="mt-8 flex gap-4">
+              <div className="mt-10 flex gap-4 justify-center">
                 <button
                   onClick={handleUpload}
                   disabled={uploading}
-                  className="btn-primary"
+                  className="btn-primary w-full md:w-auto min-w-[200px]"
                 >
-                  {uploading ? 'Uploading...' : '✅ Import All Contacts'}
+                  {uploading ? 'Importing...' : 'Confirm Import'}
                 </button>
                 <button
                   onClick={() => {
@@ -281,20 +304,37 @@ export default function UploadContacts() {
               </div>
             </div>
           )}
-
-          {/* Requirements Info */}
-          <div className="mt-12 p-6 bg-blue-50 rounded-lg">
-            <h3 className="font-bold text-gray-900 mb-3">📋 CSV Requirements</h3>
-            <ul className="text-sm text-gray-700 space-y-2">
-              <li>✅ Must have headers in first row</li>
-              <li>✅ Required column: <code className="bg-white px-2 py-1 rounded">email</code></li>
-              <li>✅ Optional columns: <code className="bg-white px-2 py-1 rounded">first_name, last_name, company, position</code></li>
-              <li>✅ Max 10,000 contacts per upload</li>
-              <li>✅ File size under 5MB</li>
-              <li>📝 Example: <code className="text-xs bg-white px-2 py-1 rounded block mt-2">john@example.com,John,Doe,Acme Inc,Engineer</code></li>
-            </ul>
-          </div>
         </div>
+
+        {/* Requirements Info */}
+        {!preview.length && (
+          <div className="mt-8 p-6 rounded-2xl border border-gray-200/50 bg-white/40 backdrop-blur-sm">
+            <h3 className="font-bold text-gray-900 mb-4 text-center">CSV Formatting Rules</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div className="flex items-center gap-3 p-3 bg-white/60 rounded-xl border border-gray-100">
+                <span className="text-green-500 font-bold">✓</span>
+                <span className="text-secondary">Headers in first row</span>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-white/60 rounded-xl border border-gray-100">
+                <span className="text-green-500 font-bold">✓</span>
+                <span className="text-secondary">Column "email" required</span>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-white/60 rounded-xl border border-gray-100">
+                <span className="text-green-500 font-bold">✓</span>
+                <span className="text-secondary">Max 10k contacts</span>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-white/60 rounded-xl border border-gray-100">
+                <span className="text-green-500 font-bold">✓</span>
+                <span className="text-secondary">Size under 5MB</span>
+              </div>
+            </div>
+            <div className="mt-4 text-center">
+              <code className="text-xs bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200 font-mono text-gray-600">
+                email,first_name,last_name,company,position
+              </code>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

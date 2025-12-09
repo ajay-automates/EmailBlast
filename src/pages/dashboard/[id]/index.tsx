@@ -139,134 +139,131 @@ export default function CampaignDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto p-8">
-        <Link href="/dashboard" className="text-blue-600 hover:text-blue-800 mb-4 inline-block">
-          ← Back to Campaigns
-        </Link>
-
-        <div className="card mb-8">
-          <h1 className="text-3xl font-bold mb-6 text-gray-900">Campaign Details</h1>
-
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Campaign Name
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="input-field"
-                placeholder="e.g., Getting 50 leads"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Subject Line
-              </label>
-              <input
-                type="text"
-                value={subjectLine}
-                onChange={(e) => setSubjectLine(e.target.value)}
-                className="input-field"
-                placeholder="e.g., Hey {firstName}, quick question"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Context for AI (personalization instructions)
-              </label>
-              <textarea
-                value={context}
-                onChange={(e) => setContext(e.target.value)}
-                className="input-field h-32"
-                placeholder="e.g., Software engineers at mid-market SaaS companies. Focus on how our tool saves them 5 hours per week."
-              />
-            </div>
-
-            <button
-              onClick={saveCampaign}
-              disabled={saving}
-              className="btn-primary"
-            >
-              {saving ? 'Saving...' : 'Save Campaign'}
-            </button>
+    <div className="min-h-screen bg-aurora text-apple-text pb-20 selection:bg-purple-500/20">
+      {/* Apple-style Glass Navigation */}
+      <nav className="sticky top-0 z-50 glass">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-black rounded-lg text-white flex items-center justify-center font-bold text-lg">E</div>
+            <span className="font-semibold text-lg tracking-tight">EmailBlast</span>
+          </div>
+          <div className="flex items-center gap-6 text-sm font-medium text-gray-500">
+            <Link href="/dashboard" className="text-apple-text">Campaigns</Link>
+            <Link href="/dashboard/sent" className="hover:text-primary transition">History</Link>
+            <div className="w-8 h-8 rounded-full bg-gray-200" />
           </div>
         </div>
+      </nav>
 
-        <div className="card">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">
-              Contacts ({contacts.length})
-              {selectedContactIds.length > 0 && <span className="text-sm font-normal text-blue-600 ml-2">({selectedContactIds.length} selected)</span>}
-            </h2>
-            <div className="flex gap-3">
-              <Link
-                href={getActionUrl(`/dashboard/${id}/generate`)}
-                className="btn-secondary"
-              >
-                🪄 Generate Emails
-              </Link>
-              <Link
-                href={getActionUrl(`/dashboard/${id}/send`)}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
-              >
-                🚀 Send Campaign
-              </Link>
-              <Link
-                href={`/dashboard/${id}/upload`}
-                className="btn-primary"
-              >
-                Import CSV
-              </Link>
+      <div className="max-w-6xl mx-auto px-6 pt-10">
+        <Link href="/dashboard" className="text-primary hover:underline text-sm font-medium mb-6 inline-block">
+          ← Campaigns
+        </Link>
+
+        <div className="flex justify-between items-end mb-10">
+          <div>
+            <h1 className="text-4xl font-bold text-apple-text tracking-tight mb-2">{name || 'Untitled Campaign'}</h1>
+            <p className="text-secondary text-lg">Manage your settings and audience.</p>
+          </div>
+          <button
+            onClick={saveCampaign}
+            disabled={saving}
+            className="btn-primary flex items-center gap-2"
+          >
+            {saving ? 'Saving...' : 'Save Settings'}
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Settings Column */}
+          <div className="lg:col-span-1 space-y-6">
+            <div className="card">
+              <h2 className="text-xl font-bold mb-6">Settings</h2>
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Campaign Name</label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="input-field"
+                    placeholder="Campaign Name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Subject Line</label>
+                  <input
+                    type="text"
+                    value={subjectLine}
+                    onChange={(e) => setSubjectLine(e.target.value)}
+                    className="input-field"
+                    placeholder="Email Subject"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">AI Context</label>
+                  <textarea
+                    value={context}
+                    onChange={(e) => setContext(e.target.value)}
+                    className="input-field h-40 resize-none"
+                    placeholder="Instructions for the AI..."
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
-          {contacts.length === 0 ? (
-            <p className="text-gray-600">No contacts imported yet. Upload a CSV to get started.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="px-4 py-2 text-left w-10">
-                      <input
-                        type="checkbox"
-                        checked={contacts.length > 0 && selectedContactIds.length === contacts.length}
-                        onChange={toggleSelectAll}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                    </th>
-                    <th className="px-4 py-2 text-left">Name</th>
-                    <th className="px-4 py-2 text-left">Email</th>
-                    <th className="px-4 py-2 text-left">Company</th>
-                    <th className="px-4 py-2 text-left">Position</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {contacts.map((contact) => (
-                    <tr key={contact.id} className={`border-b hover:bg-gray-50 ${selectedContactIds.includes(contact.id) ? 'bg-blue-50' : ''}`}>
-                      <td className="px-4 py-2">
-                        <input
-                          type="checkbox"
-                          checked={selectedContactIds.includes(contact.id)}
-                          onChange={() => toggleSelect(contact.id)}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                      </td>
-                      <td className="px-4 py-2">{contact.first_name} {contact.last_name}</td>
-                      <td className="px-4 py-2 text-blue-600">{contact.email}</td>
-                      <td className="px-4 py-2">{contact.company}</td>
-                      <td className="px-4 py-2">{contact.position}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          {/* Contacts Column */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="card min-h-[600px]">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h2 className="text-xl font-bold">Audience</h2>
+                  <p className="text-secondary text-sm">{contacts.length} contacts • {selectedContactIds.length} selected</p>
+                </div>
+                <div className="flex gap-2">
+                  <Link href={`/dashboard/${id}/upload`} className="btn-secondary text-sm px-4 py-1">Import</Link>
+                  <Link href={getActionUrl(`/dashboard/${id}/generate`)} className="btn-primary text-sm px-4 py-1 bg-gray-900 hover:bg-black">Generate & Send →</Link>
+                </div>
+              </div>
+
+              {contacts.length === 0 ? (
+                <div className="text-center py-20 border-2 border-dashed border-gray-100 rounded-2xl bg-gray-50/50">
+                  <p className="text-secondary mb-4">No contacts yet.</p>
+                  <Link href={`/dashboard/${id}/upload`} className="text-primary font-medium hover:underline">Upload CSV</Link>
+                </div>
+              ) : (
+                <div className="overflow-hidden rounded-xl border border-gray-200">
+                  <table className="w-full text-sm text-left">
+                    <thead className="bg-gray-50 text-gray-500 font-medium">
+                      <tr>
+                        <th className="px-4 py-3 w-10">
+                          <input type="checkbox" checked={contacts.length > 0 && selectedContactIds.length === contacts.length} onChange={toggleSelectAll}
+                            className="rounded-md border-gray-300 text-primary focus:ring-primary" />
+                        </th>
+                        <th className="px-4 py-3">Name</th>
+                        <th className="px-4 py-3">Email</th>
+                        <th className="px-4 py-3">Details</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 bg-white">
+                      {contacts.map((contact) => (
+                        <tr key={contact.id} className={`hover:bg-gray-50 transition-colors ${selectedContactIds.includes(contact.id) ? 'bg-blue-50/50' : ''}`}>
+                          <td className="px-4 py-3">
+                            <input type="checkbox" checked={selectedContactIds.includes(contact.id)} onChange={() => toggleSelect(contact.id)}
+                              className="rounded-md border-gray-300 text-primary focus:ring-primary" />
+                          </td>
+                          <td className="px-4 py-3 font-medium text-gray-900">{contact.first_name} {contact.last_name}</td>
+                          <td className="px-4 py-3 text-secondary">{contact.email}</td>
+                          <td className="px-4 py-3 text-gray-400">{contact.company} • {contact.position}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

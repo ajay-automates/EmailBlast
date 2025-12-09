@@ -68,7 +68,8 @@ export default async function handler(
           },
         }
 
-        const [{ id: messageId }] = await sgMail.send(msg)
+        const [response] = await sgMail.send(msg)
+        const messageId = response.headers['x-message-id']
 
         // Log sent email
         const { error: logError } = await supabase
