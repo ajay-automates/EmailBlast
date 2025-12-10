@@ -43,15 +43,25 @@ export default async function handler(
       return res.status(400).json({ error: 'No variations found' })
     }
 
+    // Validate SendGrid configuration
+    if (!process.env.SENDGRID_API_KEY) {
+      return res.status(500).json({ error: 'SendGrid API key not configured' })
+    }
+
+    if (!process.env.SENDGRID_FROM_EMAIL) {
+      return res.status(500).json({ error: 'SendGrid sender email not configured' })
+    }
+
     const sentIds: string[] = []
     const failedIds: string[] = []
+    const errors: string[] = []
 
     for (const variation of variations) {
       try {
         const contact = variation.contact as any
 
         // Get verified sender email from user profile or use default
-        const senderEmail = process.env.SENDGRID_FROM_EMAIL || 'noreply@emailblast.dev'
+        const senderEmail = process.env.SENDGRID_FROM_EMAIL
 
         const msg = {
           to: contact.email,
@@ -68,8 +78,10 @@ export default async function handler(
           },
         }
 
+        console.log(`[Send] Sending email to ${contact.email}...`)
         const [response] = await sgMail.send(msg)
         const messageId = response.headers['x-message-id']
+        console.log(`[Send] Success! Message ID: ${messageId}`)
 
         // Log sent email
         const { error: logError } = await supabase
@@ -85,11 +97,15 @@ export default async function handler(
         if (!logError) {
           sentIds.push(variation.id)
         } else {
+          console.error('[Send] Log error:', logError)
           failedIds.push(variation.id)
+          errors.push(`Failed to log email for ${contact.email}`)
         }
-      } catch (error) {
-        console.error('SendGrid error:', error)
+      } catch (error: any) {
+        console.error('[Send] SendGrid error:', error.response?.body || error.message || error)
         failedIds.push(variation.id)
+        const errorMsg = error.response?.body?.errors?.[0]?.message || error.message || 'Unknown error'
+        errors.push(errorMsg)
       }
     }
 
@@ -107,7 +123,8 @@ export default async function handler(
     res.json({
       sent: sentIds.length,
       failed: failedIds.length,
-      message: `Sent ${sentIds.length} emails successfully`,
+      message: `Sent ${sentIds.length} emails successfully${failedIds.length > 0 ? `, ${failedIds.length} failed` : ''}`,
+      errors: errors.length > 0 ? errors : undefined,
     })
   } catch (error: any) {
     console.error('Send emails error:', error)

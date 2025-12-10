@@ -99,17 +99,25 @@ export default function SendEmails() {
         }),
       })
 
+      const data = await res.json()
+
       if (!res.ok) {
-        throw new Error('Failed to send emails')
+        throw new Error(data.error || 'Failed to send emails')
       }
 
-      const data = await res.json()
+      // Show errors if any emails failed
+      if (data.errors && data.errors.length > 0) {
+        setError(`Some emails failed: ${data.errors.join(', ')}`)
+      }
+
       setStatus(`✅ ${data.message}`)
 
-      // Redirect to analytics after 2 seconds
-      setTimeout(() => {
-        router.push(`/dashboard/${id}/analytics`)
-      }, 2000)
+      // Only redirect if at least some emails were sent
+      if (data.sent > 0) {
+        setTimeout(() => {
+          router.push(`/dashboard/${id}/analytics`)
+        }, 2000)
+      }
     } catch (err: any) {
       setError(err.message || 'Send failed')
       setStatus('')
