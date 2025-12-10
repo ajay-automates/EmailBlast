@@ -52,10 +52,35 @@ export default async function handler(
       return res.json(contacts)
     }
 
-    // Handle POST: Upload CSV
-    const csvData = req.body.csvData
+    // Handle POST: Add contacts or Upload CSV
+    const { csvData, contacts: manualContacts } = req.body
+
+    // Case 1: Manual contacts array provided
+    if (manualContacts && Array.isArray(manualContacts) && manualContacts.length > 0) {
+      const contactsToInsert = manualContacts.map((c: any) => ({
+        campaign_id: id,
+        first_name: c.first_name || '',
+        last_name: c.last_name || '',
+        email: c.email || '',
+        company: c.company || '',
+        position: c.position || '',
+      }))
+
+      const { error: insertError } = await supabase
+        .from('contacts')
+        .insert(contactsToInsert)
+
+      if (insertError) throw insertError
+
+      return res.json({
+        imported: contactsToInsert.length,
+        message: `Successfully added ${contactsToInsert.length} contact(s)`
+      })
+    }
+
+    // Case 2: CSV data provided
     if (!csvData) {
-      return res.status(400).json({ error: 'No CSV data provided' })
+      return res.status(400).json({ error: 'No contact data provided (csvData or contacts array required)' })
     }
 
     const buffer = Buffer.from(csvData, 'base64')

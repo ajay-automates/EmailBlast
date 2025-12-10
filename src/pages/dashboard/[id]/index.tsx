@@ -32,6 +32,15 @@ export default function CampaignDetail() {
   const [name, setName] = useState('')
   const [subjectLine, setSubjectLine] = useState('')
   const [context, setContext] = useState('')
+  const [showAddContactModal, setShowAddContactModal] = useState(false)
+  const [newContact, setNewContact] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    company: '',
+    position: '',
+  })
+  const [addingContact, setAddingContact] = useState(false)
 
   useEffect(() => {
     if (id) {
@@ -130,6 +139,49 @@ export default function CampaignDetail() {
     return base
   }
 
+  const addContact = async () => {
+    if (!newContact.first_name || !newContact.last_name || !newContact.email) {
+      alert('Please fill in all required fields (First Name, Last Name, Email)')
+      return
+    }
+
+    try {
+      setAddingContact(true)
+      const token = localStorage.getItem('auth_token')
+      const res = await fetch(`/api/campaigns/${id}/contacts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          contacts: [newContact],
+        }),
+      })
+
+      if (res.ok) {
+        // Reset form and close modal
+        setNewContact({
+          first_name: '',
+          last_name: '',
+          email: '',
+          company: '',
+          position: '',
+        })
+        setShowAddContactModal(false)
+        // Refresh contacts list
+        fetchContacts()
+      } else {
+        alert('Failed to add contact')
+      }
+    } catch (error) {
+      console.error('Error adding contact:', error)
+      alert('Failed to add contact')
+    } finally {
+      setAddingContact(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -222,6 +274,7 @@ export default function CampaignDetail() {
                   <p className="text-secondary text-sm">{contacts.length} contacts • {selectedContactIds.length} selected</p>
                 </div>
                 <div className="flex gap-2">
+                  <button onClick={() => setShowAddContactModal(true)} className="btn-secondary text-sm px-4 py-1">+ Add Contact</button>
                   <Link href={`/dashboard/${id}/upload`} className="btn-secondary text-sm px-4 py-1">Import</Link>
                   <Link href={getActionUrl(`/dashboard/${id}/generate`)} className="btn-primary text-sm px-4 py-1 bg-gray-900 hover:bg-black">Generate & Send →</Link>
                 </div>
@@ -266,6 +319,84 @@ export default function CampaignDetail() {
           </div>
         </div>
       </div>
+
+      {/* Add Contact Modal */}
+      {showAddContactModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-[fadeIn_0.2s_ease-out]">
+            <h3 className="text-xl font-bold mb-4">Add New Contact</h3>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
+                  <input
+                    type="text"
+                    value={newContact.first_name}
+                    onChange={e => setNewContact({ ...newContact, first_name: e.target.value })}
+                    className="input-field"
+                    placeholder="John"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
+                  <input
+                    type="text"
+                    value={newContact.last_name}
+                    onChange={e => setNewContact({ ...newContact, last_name: e.target.value })}
+                    className="input-field"
+                    placeholder="Doe"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                <input
+                  type="email"
+                  value={newContact.email}
+                  onChange={e => setNewContact({ ...newContact, email: e.target.value })}
+                  className="input-field"
+                  placeholder="john@example.com"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Company</label>
+                <input
+                  type="text"
+                  value={newContact.company}
+                  onChange={e => setNewContact({ ...newContact, company: e.target.value })}
+                  className="input-field"
+                  placeholder="Acme Inc"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Position</label>
+                <input
+                  type="text"
+                  value={newContact.position}
+                  onChange={e => setNewContact({ ...newContact, position: e.target.value })}
+                  className="input-field"
+                  placeholder="CEO"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-8">
+              <button
+                onClick={() => setShowAddContactModal(false)}
+                className="flex-1 btn-secondary"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={addContact}
+                disabled={addingContact}
+                className="flex-1 btn-primary"
+              >
+                {addingContact ? 'Adding...' : 'Add Contact'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
