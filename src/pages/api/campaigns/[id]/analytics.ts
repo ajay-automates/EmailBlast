@@ -30,21 +30,35 @@ export default async function handler(
       return res.status(403).json({ error: 'Campaign not found or unauthorized' })
     }
 
-    // Get email logs for this campaign
-    const { data: logs, error: logsError } = await supabase
-      .from('email_logs')
-      .select('status')
+    // Get all contacts for this campaign first
+    const { data: contacts, error: contactsError } = await supabase
+      .from('contacts')
+      .select('id')
       .eq('campaign_id', id)
 
-    if (logsError) throw logsError
+    if (contactsError) throw contactsError
 
-    const totalSent = logs?.length || 0
-    const opened = logs?.filter(
+    const contactIds = contacts?.map(c => c.id) || []
+
+    // Get email logs for these contacts
+    let logs: any[] = []
+    if (contactIds.length > 0) {
+      const { data: logsData, error: logsError } = await supabase
+        .from('email_logs')
+        .select('status')
+        .in('contact_id', contactIds)
+
+      if (logsError) throw logsError
+      logs = logsData || []
+    }
+
+    const totalSent = logs.length
+    const opened = logs.filter(
       (l) => l.status === 'opened' || l.status === 'clicked'
-    ).length || 0
-    const clicked = logs?.filter((l) => l.status === 'clicked').length || 0
-    const replied = logs?.filter((l) => l.status === 'replied').length || 0
-    const bounced = logs?.filter((l) => l.status === 'bounced').length || 0
+    ).length
+    const clicked = logs.filter((l) => l.status === 'clicked').length
+    const replied = logs.filter((l) => l.status === 'replied').length
+    const bounced = logs.filter((l) => l.status === 'bounced').length
 
     const openRate = totalSent > 0 ? ((opened / totalSent) * 100).toFixed(1) : '0.0'
     const clickRate = totalSent > 0 ? ((clicked / totalSent) * 100).toFixed(1) : '0.0'
