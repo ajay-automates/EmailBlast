@@ -37,18 +37,18 @@ export default function SendEmails() {
       setLoading(true)
       const token = localStorage.getItem('auth_token')
 
-      // Get contacts for this campaign
-      const contactsRes = await fetch(`/api/campaigns/${id}`, {
+      // Fetch email variations for this campaign
+      const variationsRes = await fetch(`/api/campaigns/${id}/variations`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
 
-      if (contactsRes.ok) {
-        const campaign = await contactsRes.json()
-        // For now, we'll fetch from a variations endpoint
-        // This is a placeholder - you'd need to create this endpoint
-        setVariations([]) // Will be populated once endpoint is created
+      if (variationsRes.ok) {
+        const variationsData = await variationsRes.json()
+        setVariations(variationsData)
+      } else {
+        setError('Failed to load email variations')
       }
     } catch (error) {
       console.error('Error fetching variations:', error)
@@ -198,8 +198,8 @@ export default function SendEmails() {
               <div
                 key={variation.id}
                 className={`border rounded-lg p-4 cursor-pointer transition ${selectedVariations.has(variation.id)
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 hover:border-gray-300'
                   }`}
               >
                 <div className="flex gap-4">
