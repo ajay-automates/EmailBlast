@@ -3,8 +3,6 @@ import { supabase } from '@/lib/supabase'
 import { getAuthUser } from '@/lib/auth'
 import sgMail from '@sendgrid/mail'
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY || '')
-
 export const config = {
   maxDuration: 300,
 }
@@ -18,6 +16,11 @@ export default async function handler(
   }
 
   try {
+    // Set API key inside handler to ensure env vars are loaded
+    if (!process.env.SENDGRID_API_KEY) {
+      return res.status(500).json({ error: 'SendGrid API key not configured' })
+    }
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY)
     const user = await getAuthUser(req)
     const { id } = req.query
     const { variationIds } = req.body
@@ -63,24 +66,46 @@ export default async function handler(
         // Get verified sender email from user profile or use default
         const senderEmail = process.env.SENDGRID_FROM_EMAIL
 
-        const msg = {
-          to: contact.email,
-          from: senderEmail,
+        const emailPayload = {
+          personalizations: [{
+            to: [{ email: contact.email }],
+          }],
+          from: { email: senderEmail },
           subject: variation.subject,
-          text: variation.body,
-          html: `<p>${variation.body.replace(/\n/g, '<br>')}</p>`,
-          trackingSettings: {
-            clickTracking: { enable: true },
-            openTracking: { enable: true },
+          content: [
+            { type: 'text/plain', value: variation.body },
+            { type: 'text/html', value: `<p>${variation.body.replace(/\n/g, '<br>')}</p>` }
+          ],
+          tracking_settings: {
+            click_tracking: { enable: true },
+            open_tracking: { enable: true },
           },
-          headers: {
-            'X-Email-ID': variation.id,
-          },
+          custom_args: {
+            'email_id': variation.id,
+          }
         }
 
-        console.log(`[Send] Sending email to ${contact.email}...`)
-        const [response] = await sgMail.send(msg)
-        const messageId = response.headers['x-message-id']
+        console.log(`[Send] Attempting to send from: '${senderEmail}' to '${contact.email}'`)
+        console.log(`[Send] API Key length: ${process.env.SENDGRID_API_KEY?.length}`)
+        console.log(`[Send] From email bytes:`, Buffer.from(senderEmail || '').toString('hex'))
+        console.log(`[Send] Payload from:`, JSON.stringify(emailPayload.from))
+
+        const sgResponse = await fetch('https://api.sendgrid.com/v3/mail/send', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.SENDGRID_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(emailPayload),
+        })
+
+        if (!sgResponse.ok) {
+          const errorBody = await sgResponse.text()
+          console.error('[Send] SendGrid error:', errorBody)
+          throw new Error(`SendGrid error: ${errorBody}`)
+        }
+
+        const messageId = sgResponse.headers.get('x-message-id') || 'unknown'
         console.log(`[Send] Success! Message ID: ${messageId}`)
 
         // Log sent email
