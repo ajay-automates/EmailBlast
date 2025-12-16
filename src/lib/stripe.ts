@@ -1,3 +1,4 @@
+// Stripe configuration for EmailBlast
 import Stripe from 'stripe';
 
 if (!process.env.STRIPE_SECRET_KEY) {
