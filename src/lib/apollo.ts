@@ -63,16 +63,18 @@ export class ApolloService {
             });
 
             if (!response.ok) {
-                const error = await response.text();
-                throw new Error(`Apollo API Error: ${error}`);
+                const errorText = await response.text();
+                console.warn(`⚠️ Apollo API request failed (${response.status}): ${errorText}`);
+                console.warn('⚠️ Falling back to Mock Data for V2 Demo.');
+                return this.getMockLeads(industry);
             }
 
             const data = await response.json();
             return data.people || [];
 
         } catch (error: any) {
-            console.error('Apollo Fetch Error:', error);
-            throw error;
+            console.error('Apollo Fetch Error (Falling back to mock):', error);
+            return this.getMockLeads(industry);
         }
     }
 
