@@ -38,10 +38,8 @@ export default function OneClickOutbound() {
 
             if (!res.ok) throw new Error(data.error);
 
-            alert(`Success! Started campaign for ${data.leads} leads.`);
-            setOpenModal(false);
-            checkStatus(); // Refresh limits
-            router.reload(); // Show new campaign in list
+            // Redirect to review page
+            router.push(`/dashboard/${data.campaignId}/review`);
         } catch (error: any) {
             alert(error.message);
         } finally {

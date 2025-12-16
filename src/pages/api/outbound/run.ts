@@ -127,26 +127,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const queueItems: any[] = []; // Explicitly typed as any[]
 
         for (const contact of insertedContacts) {
-            const context = contact.enrichment_data as any;
+            const enrichData = contact.enrichment_data as any;
 
-            // LOCKED SYSTEM PROMPT
-            const subject = `Question about ${contact.company}`;
+            // ENHANCED PERSONALIZED EMAIL TEMPLATE
+            const subject = `${contact.first_name}, quick question about ${contact.company}`;
+
             const body = `Hi ${contact.first_name},
 
-${context.icebreaker}
+${enrichData.icebreaker}
 
-Given that you are leading things at ${contact.company}, I wanted to see if you'd be open to a conversation about ${valueProp || 'improving your workflow'}.
+I noticed ${contact.company} ${enrichData.companyServices.toLowerCase()}.
 
-Verified professionals in ${industry} are seeing great results.
+Based on what I've seen, companies like yours often face challenges with ${enrichData.painPoints.toLowerCase()}.
 
-${context.context}
+${enrichData.personalizedHook}
 
-Worth a quick chat?
+Would you be open to a brief conversation? I'd love to share how we're helping similar ${industry} companies.
 
 ${ctaLink}
 
-Best,
-[Your Name]`;
+Best regards,
+[Your Name]
+
+P.S. - I checked out ${enrichData.companyWebsite} and was impressed by your approach.`;
 
             variationsToInsert.push({
                 contact_id: contact.id,
@@ -163,15 +166,16 @@ Best,
 
         if (varError) throw varError;
 
-        // 7. SCHEDULE SENDING (Queue)
-        // Schedule them 15 mins apart starting now
+        // 7. SCHEDULE SENDING (DISABLED FOR REVIEW MODE)
+        // We do NOT add to send_queue yet. User must review and click "Send".
+        /*
         const startTime = Date.now();
         const baseDelay = 15 * 60 * 1000; // 15 mins
-
+    
         insertedVariations.forEach((variation, index) => {
             const contact = insertedContacts.find(c => c.id === variation.contact_id);
             const sendTime = new Date(startTime + (index * baseDelay));
-
+    
             queueItems.push({
                 campaign_id: campaign.id,
                 variation_id: variation.id,
@@ -180,12 +184,13 @@ Best,
                 status: 'pending'
             });
         });
-
+    
         const { error: queueError } = await supabase
             .from('send_queue')
             .insert(queueItems);
-
+    
         if (queueError) throw queueError;
+        */
 
         // 8. LOG THE RUN
         await supabase.from('outbound_runs').insert({
