@@ -20,7 +20,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
-        // 1. CHECK LIMITS (Strict 24h Cooldown)
+        // 1. SELF-HEAL: Ensure user exists in public.users to prevent FK Error
+        const { error: userSyncError } = await supabase
+            .from('users')
+            .upsert({
+                id: user.id,
+                email: user.email,
+                updated_at: new Date().toISOString()
+            }, { onConflict: 'id' });
+
+        if (userSyncError) {
+            console.warn('User Sync Warning:', userSyncError);
+            // We continue anyway; sometimes RLS hides the error but the write works
+        }
+
+        // 2. CHECK LIMITS (Strict 24h Cooldown)
         const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
         const { data: recentRuns } = await supabase
             .from('outbound_runs')
