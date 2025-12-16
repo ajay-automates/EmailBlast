@@ -129,18 +129,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         for (const contact of insertedContacts) {
             const enrichData = contact.enrichment_data as any;
 
+            // Defensive checks with fallbacks
+            const icebreaker = enrichData?.icebreaker || `I came across ${contact.company} and was impressed by your work`;
+            const companyServices = enrichData?.companyServices || `provides professional services`;
+            const painPoints = enrichData?.painPoints || `growth and scaling challenges`;
+            const personalizedHook = enrichData?.personalizedHook || `I thought this might be relevant to your work`;
+            const companyWebsite = enrichData?.companyWebsite || `${contact.company}'s website`;
+
             // ENHANCED PERSONALIZED EMAIL TEMPLATE
             const subject = `${contact.first_name}, quick question about ${contact.company}`;
 
             const body = `Hi ${contact.first_name},
 
-${enrichData.icebreaker}
+${icebreaker}
 
-I noticed ${contact.company} ${enrichData.companyServices.toLowerCase()}.
+I noticed ${contact.company} ${companyServices.toLowerCase()}.
 
-Based on what I've seen, companies like yours often face challenges with ${enrichData.painPoints.toLowerCase()}.
+Based on what I've seen, companies like yours often face challenges with ${painPoints.toLowerCase()}.
 
-${enrichData.personalizedHook}
+${personalizedHook}
 
 Would you be open to a brief conversation? I'd love to share how we're helping similar ${industry} companies.
 
@@ -149,7 +156,7 @@ ${ctaLink}
 Best regards,
 [Your Name]
 
-P.S. - I checked out ${enrichData.companyWebsite} and was impressed by your approach.`;
+P.S. - I checked out ${companyWebsite} and was impressed by your approach.`;
 
             variationsToInsert.push({
                 contact_id: contact.id,
@@ -164,7 +171,12 @@ P.S. - I checked out ${enrichData.companyWebsite} and was impressed by your appr
             .insert(variationsToInsert)
             .select();
 
-        if (varError) throw varError;
+        if (varError) {
+            console.error('Variation insertion error:', varError);
+            throw varError;
+        }
+
+        console.log(`✅ Successfully generated ${insertedVariations?.length || 0} email variations`);
 
         // 7. SCHEDULE SENDING (DISABLED FOR REVIEW MODE)
         // We do NOT add to send_queue yet. User must review and click "Send".
