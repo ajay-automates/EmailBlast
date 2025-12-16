@@ -100,17 +100,44 @@ export default function OneClickOutbound() {
                                     value={industry}
                                     onChange={e => setIndustry(e.target.value)}
                                 />
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                    {['SaaS Startups', 'Marketing Agencies', 'Real Estate', 'E-commerce Brands', 'B2B Services'].map((item) => (
+                                        <button
+                                            key={item}
+                                            onClick={() => setIndustry(item)}
+                                            className="text-xs bg-gray-100 hover:bg-blue-50 hover:text-blue-600 text-gray-600 px-3 py-1.5 rounded-full border border-gray-200 transition-colors"
+                                        >
+                                            + {item}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
 
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 mb-1">Your Value Prop (Short)</label>
                                 <textarea
-                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                                     placeholder="e.g. We help agents close 3x more deals with AI automation."
                                     rows={2}
                                     value={valueProp}
                                     onChange={e => setValueProp(e.target.value)}
                                 />
+                                <div className="flex flex-col gap-2 mt-2">
+                                    {[
+                                        'We help you book 10+ qualified meetings per month.',
+                                        'We automate your busywork so you save 20h/week.',
+                                        'We help you cut operational costs by 30% with AI.',
+                                        'We scale your revenue without hiring more staff.'
+                                    ].map((item) => (
+                                        <button
+                                            key={item}
+                                            onClick={() => setValueProp(item)}
+                                            className="text-left text-xs bg-gray-100 hover:bg-blue-50 hover:text-blue-600 text-gray-600 px-3 py-2 rounded-lg border border-gray-200 transition-colors truncate"
+                                        >
+                                            ✨ {item}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
 
                             <div>
