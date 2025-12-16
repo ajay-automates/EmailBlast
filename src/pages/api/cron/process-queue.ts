@@ -13,7 +13,7 @@ import sgMail from '@sendgrid/mail'
  * {
  *   "crons": [{
  *     "path": "/api/cron/process-queue",
- *     "schedule": "*/15 * * * * "
+ *     "schedule": "0 12 * * *"
     *   }]
  * }
  * 
