@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-
+import OneClickOutbound from '@/components/dashboard/OneClickOutbound'
 
 interface Campaign {
   id: string
@@ -23,12 +23,8 @@ export default function Dashboard() {
   const fetchCampaigns = async () => {
     try {
       setLoading(true)
-      const token = localStorage.getItem('auth_token')
-      const res = await fetch('/api/campaigns', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+      // Use standard fetch, auth is handled by cookies now
+      const res = await fetch('/api/campaigns')
       if (res.ok) {
         const data = await res.json()
         setCampaigns(data)
@@ -42,12 +38,10 @@ export default function Dashboard() {
 
   const createNewCampaign = async () => {
     try {
-      const token = localStorage.getItem('auth_token')
       const res = await fetch('/api/campaigns', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           name: 'New Campaign',
@@ -64,18 +58,7 @@ export default function Dashboard() {
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'draft':
-        return 'bg-gray-100 text-gray-800'
-      case 'active':
-        return 'bg-green-100 text-green-800'
-      case 'sent':
-        return 'bg-blue-100 text-blue-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
-    }
-  }
+  // ... helper functions ...
 
   if (loading) {
     return (
@@ -105,6 +88,10 @@ export default function Dashboard() {
       </nav>
 
       <div className="max-w-6xl mx-auto px-6 pt-16">
+
+        {/* V2 ONE-CLICK OUTBOUND FEATURE */}
+        <OneClickOutbound />
+
         <div className="flex justify-between items-end mb-12 animate-[fadeIn_0.5s_ease-out]">
           <div>
             <h1 className="text-5xl font-bold text-gray-900 tracking-tight mb-2">Campaigns</h1>
