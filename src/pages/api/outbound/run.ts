@@ -34,19 +34,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             // We continue anyway; sometimes RLS hides the error but the write works
         }
 
-        // 2. CHECK LIMITS (Strict 24h Cooldown)
-        const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-        const { data: recentRuns } = await supabase
-            .from('outbound_runs')
-            .select('*')
-            .eq('user_id', user.id)
-            .gte('run_at', yesterday);
+        // 2. CHECK LIMITS (UNLIMITED MODE - DISABLED)
+        // const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        // const { data: recentRuns } = await supabase
+        //     .from('outbound_runs')
+        //     .select('*')
+        //     .eq('user_id', user.id)
+        //     .gte('run_at', yesterday);
 
+        // UNLIMITED: We skip the 429 error logic check
+        /*
         if (recentRuns && recentRuns.length > 0) {
             return res.status(429).json({
                 error: 'Daily limit reached. You can only run One-Click Outbound once every 24 hours.'
             });
         }
+        */
 
         // 2. FETCH LEADS (Apollo)
         const apollo = new ApolloService();

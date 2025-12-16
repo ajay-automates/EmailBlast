@@ -23,27 +23,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (error) return res.status(500).json({ error: error.message });
 
     const lastRun = runs?.[0];
-    const canRun = !lastRun;
-
-    let timeUntilNext = null;
-    if (lastRun) {
-        const nextRunTime = new Date(new Date(lastRun.run_at).getTime() + 24 * 60 * 60 * 1000);
-        timeUntilNext = nextRunTime.toISOString();
-    }
-
-    // Check Plan Status (Simple check for now, ideally check 'users' table plan column)
-    const { data: userData } = await supabase
-        .from('users')
-        .select('plan')
-        .eq('id', user.id)
-        .single();
-
-    const isPro = userData?.plan === 'pro' || userData?.plan === 'business';
+    // UNLIMITED MODE: Always allow run
+    const canRun = true;
+    const timeUntilNext = null;
 
     res.status(200).json({
-        canRun,
+        canRun: true,
         lastRun,
-        timeUntilNext,
-        isPro: true // Temporarily allow all for demo, otherwise: isPro
+        timeUntilNext: null,
+        isPro: true
     });
 }
