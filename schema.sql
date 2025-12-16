@@ -18,6 +18,9 @@ CREATE TABLE campaigns (
   name TEXT NOT NULL,
   subject_line TEXT,
   context TEXT, -- instructions for AI personalization
+  ai_prompt TEXT, -- custom AI system prompt
+  tone TEXT DEFAULT 'professional', -- professional, direct, friendly
+  daily_limit INT DEFAULT 50, -- max emails per day
   status TEXT DEFAULT 'draft', -- draft, scheduled, sent, active
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW()
@@ -32,6 +35,9 @@ CREATE TABLE contacts (
   email TEXT NOT NULL,
   company TEXT,
   position TEXT,
+  replied BOOLEAN DEFAULT FALSE,
+  unsubscribed BOOLEAN DEFAULT FALSE,
+  bounced BOOLEAN DEFAULT FALSE,
   imported_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -85,3 +91,21 @@ CREATE TABLE campaign_analytics (
   reply_rate DECIMAL,
   updated_at TIMESTAMP DEFAULT NOW()
 );
+
+-- Send queue table (for daily limits and rate limiting)
+CREATE TABLE send_queue (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  campaign_id UUID REFERENCES campaigns(id) ON DELETE CASCADE,
+  variation_id UUID REFERENCES email_variations(id) ON DELETE CASCADE,
+  contact_id UUID REFERENCES contacts(id) ON DELETE CASCADE,
+  scheduled_for TIMESTAMP NOT NULL,
+  sent_at TIMESTAMP,
+  status TEXT DEFAULT 'pending', -- pending, sent, failed, cancelled
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Indexes for performance
+CREATE INDEX idx_send_queue_scheduled ON send_queue(scheduled_for) WHERE status = 'pending';
+CREATE INDEX idx_contacts_campaign ON contacts(campaign_id);
+CREATE INDEX idx_contacts_status ON contacts(replied, unsubscribed, bounced);
+CREATE INDEX idx_email_logs_contact ON email_logs(contact_id);

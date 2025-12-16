@@ -57,12 +57,22 @@ export default async function handler(
     console.log(`[Generate] Processing ${contacts.length} contacts`)
     let generated = 0
 
+    // Define tone-specific instructions
+    const toneInstructions = {
+      professional: 'Use a professional, respectful tone. Be formal but warm.',
+      direct: 'Be direct and to-the-point. Skip pleasantries. Focus on value.',
+      friendly: 'Use a casual, friendly tone. Sound like a peer reaching out to help.',
+    }
+
+    const toneInstruction = toneInstructions[campaign.tone as keyof typeof toneInstructions] || toneInstructions.professional
+
     for (const contact of contacts) {
       console.log(`[Generate] Generating for contact ${contact.email}`)
       // Generate 5 variations per contact
       for (let i = 1; i <= 5; i++) {
         try {
-          const systemPrompt = `You are an expert cold email copywriter. Your goal is to generate high-converting cold email variations.`
+          // Use custom AI prompt if provided, otherwise use default
+          const systemPrompt = campaign.ai_prompt || `You are an expert cold email copywriter. Your goal is to generate high-converting cold email variations. ${toneInstruction}`
 
           const userPrompt = `Generate personalized cold email variation #${i}.
 
@@ -71,6 +81,7 @@ Recipient: ${contact.first_name} ${contact.last_name}
 Company: ${contact.company}
 Position: ${contact.position}
 Subject Line Template: ${campaign.subject_line}
+Tone: ${campaign.tone || 'professional'}
 
 Requirements:
 - Personalize with their name, company, and position
@@ -78,6 +89,7 @@ Requirements:
 - Include a clear CTA
 - Sound natural, not templated
 - Variation #${i} should have a DIFFERENT angle/hook than others
+- Follow the ${campaign.tone || 'professional'} tone
 
 Return ONLY valid JSON in this format:
 {

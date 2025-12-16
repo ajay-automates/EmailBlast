@@ -38,12 +38,29 @@ export default async function handler(
       }
 
       if (event.event === 'bounce') {
+        // Update email log
         await supabase
           .from('email_logs')
           .update({
             status: 'bounced',
           })
           .eq('sendgrid_message_id', messageId)
+
+        // Mark contact as bounced to prevent future sends
+        const { data: log } = await supabase
+          .from('email_logs')
+          .select('contact_id')
+          .eq('sendgrid_message_id', messageId)
+          .single()
+
+        if (log?.contact_id) {
+          await supabase
+            .from('contacts')
+            .update({ bounced: true })
+            .eq('id', log.contact_id)
+
+          console.log('[Webhook] Contact marked as bounced:', log.contact_id)
+        }
       }
 
       if (event.event === 'delivered') {

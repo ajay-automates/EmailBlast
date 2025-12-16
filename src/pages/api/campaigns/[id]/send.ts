@@ -33,17 +33,43 @@ export default async function handler(
       return res.status(400).json({ error: 'No variations selected' })
     }
 
-    // Get variations with contact info
+    // Get variations with contact info (exclude suppressed contacts)
     const { data: variations, error: variationsError } = await supabase
       .from('email_variations')
       .select(`
         *,
-        contact:contact_id(id, email, first_name, last_name)
+        contact:contact_id(id, email, first_name, last_name, replied, unsubscribed, bounced)
       `)
       .in('id', variationIds)
 
     if (variationsError || !variations || variations.length === 0) {
       return res.status(400).json({ error: 'No variations found' })
+    }
+
+    // Filter out suppressed contacts
+    const validVariations = variations.filter((v: any) => {
+      const contact = v.contact
+      if (!contact) return false
+      if (contact.replied) {
+        console.log(`[Send] Skipping ${contact.email} - already replied`)
+        return false
+      }
+      if (contact.unsubscribed) {
+        console.log(`[Send] Skipping ${contact.email} - unsubscribed`)
+        return false
+      }
+      if (contact.bounced) {
+        console.log(`[Send] Skipping ${contact.email} - bounced`)
+        return false
+      }
+      return true
+    })
+
+    if (validVariations.length === 0) {
+      return res.status(400).json({
+        error: 'All selected contacts are suppressed (replied/unsubscribed/bounced)',
+        skipped: variations.length,
+      })
     }
 
     // Validate SendGrid configuration
@@ -57,14 +83,26 @@ export default async function handler(
 
     const sentIds: string[] = []
     const failedIds: string[] = []
+    const skippedIds: string[] = []
     const errors: string[] = []
 
-    for (const variation of variations) {
+    // Track skipped contacts
+    const skippedCount = variations.length - validVariations.length
+
+    for (const variation of validVariations) {
       try {
         const contact = variation.contact as any
 
         // Get verified sender email from user profile or use default
         const senderEmail = process.env.SENDGRID_FROM_EMAIL
+
+        // Generate unsubscribe link
+        const baseUrl = process.env.NEXT_PUBLIC_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000'
+        const unsubscribeLink = `${baseUrl}/api/unsubscribe/${contact.id}`
+
+        // Inject unsubscribe link into email body
+        const emailBody = variation.body + `\n\n---\n\nDon't want to receive these emails? Unsubscribe: ${unsubscribeLink}`
+        const emailHtml = `<p>${variation.body.replace(/\n/g, '<br>')}</p><hr style="margin: 24px 0; border: none; border-top: 1px solid #e2e8f0;"><p style="font-size: 12px; color: #718096;">Don't want to receive these emails? <a href="${unsubscribeLink}" style="color: #4299e1;">Unsubscribe</a></p>`
 
         const emailPayload = {
           personalizations: [{
@@ -73,8 +111,8 @@ export default async function handler(
           from: { email: senderEmail },
           subject: variation.subject,
           content: [
-            { type: 'text/plain', value: variation.body },
-            { type: 'text/html', value: `<p>${variation.body.replace(/\n/g, '<br>')}</p>` }
+            { type: 'text/plain', value: emailBody },
+            { type: 'text/html', value: emailHtml }
           ],
           tracking_settings: {
             click_tracking: { enable: true },
@@ -82,6 +120,7 @@ export default async function handler(
           },
           custom_args: {
             'email_id': variation.id,
+            'contact_id': contact.id,
           }
         }
 
@@ -148,7 +187,8 @@ export default async function handler(
     res.json({
       sent: sentIds.length,
       failed: failedIds.length,
-      message: `Sent ${sentIds.length} emails successfully${failedIds.length > 0 ? `, ${failedIds.length} failed` : ''}`,
+      skipped: skippedCount,
+      message: `Sent ${sentIds.length} emails successfully${failedIds.length > 0 ? `, ${failedIds.length} failed` : ''}${skippedCount > 0 ? `, ${skippedCount} skipped (suppressed)` : ''}`,
       errors: errors.length > 0 ? errors : undefined,
     })
   } catch (error: any) {
