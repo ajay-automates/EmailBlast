@@ -84,7 +84,7 @@ export class ApolloService {
             id: `mock-${i}`,
             first_name: `TestFirst${i}`,
             last_name: `TestLast${i}`,
-            email: `test.lead.${i}@example.com`, // Safe test emails
+            email: `test.lead.${i}.${Date.now()}@example.com`, // Safe unique test emails
             headline: `Founder at Startup ${i}`,
             organization: {
                 name: `Cool ${industry} Startup ${i}`,

@@ -38,6 +38,13 @@ export default function OneClickOutbound() {
 
             if (!res.ok) throw new Error(data.error);
 
+            if (!data.campaignId) {
+                if (data.message) {
+                    alert(data.message);
+                }
+                return;
+            }
+
             // Redirect to review page
             router.push(`/dashboard/${data.campaignId}/review`);
         } catch (error: any) {
@@ -77,6 +84,18 @@ export default function OneClickOutbound() {
                 >
                     {isLocked ? 'Cooldown Active ⏳' : 'Find 10 Leads & Start 🚀'}
                 </button>
+            </div>
+
+            {/* Live Mode Banner */}
+            <div className="mt-6 bg-green-500/10 rounded-lg p-3 text-sm flex items-center justify-between backdrop-blur-sm border border-green-500/20">
+                <div className="flex items-center gap-2">
+                    <span className="text-green-200">✅ <strong>Live Mode Active</strong>: Sourcing real leads from Apollo.io.</span>
+                </div>
+                <div className="flex gap-3">
+                    <span className="text-green-200 text-xs opacity-70">
+                        {new Date().toLocaleDateString()}
+                    </span>
+                </div>
             </div>
 
             {/* Modal */}
