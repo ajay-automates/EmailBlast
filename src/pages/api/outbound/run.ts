@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createPagesServerClient } from '@supabase/auth-helpers-nextjs';
-import { ApolloService } from '@/lib/apollo';
+import { FreeLeadFinder } from '@/lib/free-lead-finder';
 import { validateLeads } from '@/lib/outbound-filters';
 import { AIEnrichmentService } from '@/lib/ai-enrichment';
 
@@ -51,9 +51,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
         */
 
-        // 2. FETCH LEADS (Apollo)
-        const apollo = new ApolloService();
-        const rawLeads = await apollo.getLeads(industry);
+        // 2. FETCH LEADS (Free Lead Finder - Hunter.io + Curated Data)
+        const leadFinder = new FreeLeadFinder();
+        const rawLeads = await leadFinder.getLeads(industry);
 
         if (rawLeads.length === 0) {
             return res.status(404).json({ error: 'No leads found for this industry. Try a broader term.' });

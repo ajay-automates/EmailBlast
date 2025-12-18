@@ -37,12 +37,29 @@ export class ApolloService {
      * Fetch leads for V2 One-Click Outbound
      */
     async getLeads(industry: string): Promise<ApolloPerson[]> {
+        console.log('🔍 Apollo API Key Status:', this.apiKey ? `Present (${this.apiKey.substring(0, 10)}...)` : 'MISSING');
+
         if (!this.apiKey) {
             console.warn('⚠️ No APOLLO_API_KEY found. Returning mock data for demo/testing.');
             return this.getMockLeads(industry);
         }
 
+        console.log('🚀 Attempting to fetch real leads from Apollo.io for industry:', industry);
+
         try {
+            const requestBody = {
+                q_organization_domains: null,
+                page: 1,
+                per_page: 15, // Buffer for validation (need 10 net)
+                person_titles: ["ceo", "founder", "co-founder", "owner", "president"],
+                person_locations: ["United States"],
+                organization_num_employees_ranges: ["1,10", "11,20", "21,50"], // 1-50 range
+                q_organization_keyword_tags: [industry], // e.g. "software", "marketing"
+                contact_email_status: ["verified"] // ONLY verified emails
+            };
+
+            console.log('📤 Apollo API Request:', JSON.stringify(requestBody, null, 2));
+
             const response = await fetch(`${this.baseUrl}/mixed_people/search`, {
                 method: 'POST',
                 headers: {
@@ -50,30 +67,37 @@ export class ApolloService {
                     'Cache-Control': 'no-cache',
                     'X-Api-Key': this.apiKey
                 },
-                body: JSON.stringify({
-                    q_organization_domains: null,
-                    page: 1,
-                    per_page: 15, // Buffer for validation (need 10 net)
-                    person_titles: ["ceo", "founder", "co-founder", "owner", "president"],
-                    person_locations: ["United States"],
-                    organization_num_employees_ranges: ["1,10", "11,20", "21,50"], // 1-50 range
-                    q_organization_keyword_tags: [industry], // e.g. "software", "marketing"
-                    contact_email_status: ["verified"] // ONLY verified emails
-                })
+                body: JSON.stringify(requestBody)
             });
+
+            console.log('📥 Apollo API Response Status:', response.status);
 
             if (!response.ok) {
                 const errorText = await response.text();
-                console.warn(`⚠️ Apollo API request failed (${response.status}): ${errorText}`);
+                console.error(`❌ Apollo API request failed (${response.status}):`, errorText);
                 console.warn('⚠️ Falling back to Mock Data for V2 Demo.');
                 return this.getMockLeads(industry);
             }
 
             const data = await response.json();
-            return data.people || [];
+            console.log('✅ Apollo API Success! Received data:', {
+                peopleCount: data.people?.length || 0,
+                firstPerson: data.people?.[0] ? {
+                    name: `${data.people[0].first_name} ${data.people[0].last_name}`,
+                    company: data.people[0].organization?.name
+                } : 'No people found'
+            });
+
+            if (!data.people || data.people.length === 0) {
+                console.warn('⚠️ Apollo returned 0 results. Falling back to mock data.');
+                return this.getMockLeads(industry);
+            }
+
+            return data.people;
 
         } catch (error: any) {
-            console.error('Apollo Fetch Error (Falling back to mock):', error);
+            console.error('❌ Apollo Fetch Error (Falling back to mock):', error.message);
+            console.error('Full error:', error);
             return this.getMockLeads(industry);
         }
     }

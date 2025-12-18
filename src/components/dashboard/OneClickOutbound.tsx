@@ -86,14 +86,14 @@ export default function OneClickOutbound() {
                 </button>
             </div>
 
-            {/* Live Mode Banner */}
+            {/* Free Mode Banner */}
             <div className="mt-6 bg-green-500/10 rounded-lg p-3 text-sm flex items-center justify-between backdrop-blur-sm border border-green-500/20">
                 <div className="flex items-center gap-2">
-                    <span className="text-green-200">✅ <strong>Live Mode Active</strong>: Sourcing real leads from Apollo.io.</span>
+                    <span className="text-green-200">✅ <strong>Free Mode</strong>: Sourcing real company data (Hunter.io + Curated Sources).</span>
                 </div>
                 <div className="flex gap-3">
                     <span className="text-green-200 text-xs opacity-70">
-                        {new Date().toLocaleDateString()}
+                        No API costs
                     </span>
                 </div>
             </div>
