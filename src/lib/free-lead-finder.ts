@@ -165,11 +165,15 @@ export class FreeLeadFinder {
             const title = titles[i % titles.length];
             const [city, state] = company.location.split(', ');
 
+            // Generate random string to ensure email is unique for every test run
+            const uniqueId = Math.random().toString(36).substring(2, 7);
+
             return {
-                id: `curated-${i}`,
+                id: `curated-${i}-${uniqueId}`,
                 first_name: firstName,
                 last_name: lastName,
-                email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example-demo.com`, // Safe demo email
+                // Result: sarah.johnson.x7az@example-demo.com
+                email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}.${uniqueId}@example-demo.com`,
                 headline: `${title} at ${company.name}`,
                 organization: {
                     name: company.name,

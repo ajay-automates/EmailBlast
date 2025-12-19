@@ -59,6 +59,11 @@ CTA LINK: ${ctaLink}
 
 Generate a NEW, DIFFERENT personalized email (subject + body). Keep it under 100 words, professional, and specific to their business.
 
+IMPORTANT: You MUST sign off the email EXACTLY like this:
+Best regards,
+AJAY KUMAR REDDY NELAVETLA
+8575761177
+
 Return ONLY valid JSON:
 {
     "subject": "...",

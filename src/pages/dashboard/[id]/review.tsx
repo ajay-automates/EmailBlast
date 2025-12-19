@@ -28,6 +28,20 @@ export default function ReviewEmails() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [sending, setSending] = useState<string | null>(null);
 
+    // Editing state
+    const [editing, setEditing] = useState(false);
+    const [editSubject, setEditSubject] = useState('');
+    const [editBody, setEditBody] = useState('');
+    const [saving, setSaving] = useState(false);
+
+    // Sync editing state when email changes
+    useEffect(() => {
+        if (emails[currentIndex]) {
+            setEditSubject(emails[currentIndex].variation.subject);
+            setEditBody(emails[currentIndex].variation.body);
+        }
+    }, [currentIndex, emails]);
+
     useEffect(() => {
         if (id) {
             fetchEmailsForReview();
@@ -144,6 +158,40 @@ export default function ReviewEmails() {
 
     const current = emails[currentIndex];
 
+
+
+    const handleSave = async () => {
+        setSaving(true);
+        const currentVariationId = emails[currentIndex].variation.id;
+
+        try {
+            const res = await fetch(`/api/campaigns/${id}/update-one`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    variationId: currentVariationId,
+                    subject: editSubject,
+                    body: editBody
+                })
+            });
+
+            if (res.ok) {
+                // Update local state
+                const updated = [...emails];
+                updated[currentIndex].variation.subject = editSubject;
+                updated[currentIndex].variation.body = editBody;
+                setEmails(updated);
+                // Visual feedback checkmark could go here
+            } else {
+                alert('Failed to save changes');
+            }
+        } catch (error) {
+            alert('Error saving changes');
+        } finally {
+            setSaving(false);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
             {/* Header */}
@@ -208,26 +256,36 @@ export default function ReviewEmails() {
                         )}
                     </div>
 
-                    {/* Email Content */}
+                    {/* Email Content - NOW EDITABLE */}
                     <div className="p-8">
                         <div className="mb-6">
-                            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                                Subject Line
-                            </label>
-                            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                                <p className="font-semibold text-gray-900">{current.variation.subject}</p>
+                            <div className="flex justify-between items-center mb-2">
+                                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                    Subject Line
+                                </label>
+                                {saving && <span className="text-xs text-green-600 font-bold animate-pulse">Saving...</span>}
                             </div>
+                            <input
+                                className="w-full bg-gray-50 rounded-lg p-4 border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none font-semibold text-gray-900 transition-all"
+                                value={editSubject}
+                                onChange={(e) => setEditSubject(e.target.value)}
+                                onBlur={handleSave} // Auto-save on blur
+                            />
                         </div>
 
                         <div>
-                            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                                Email Body
-                            </label>
-                            <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                                <pre className="whitespace-pre-wrap font-sans text-gray-800 leading-relaxed">
-                                    {current.variation.body}
-                                </pre>
+                            <div className="flex justify-between items-center mb-2">
+                                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                    Email Body
+                                </label>
                             </div>
+                            <textarea
+                                className="w-full h-96 bg-gray-50 rounded-lg p-6 border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none font-sans text-gray-800 leading-relaxed resize-none transition-all"
+                                value={editBody}
+                                onChange={(e) => setEditBody(e.target.value)}
+                                onBlur={handleSave} // Auto-save on blur
+                            />
+                            <p className="text-xs text-gray-400 mt-2 text-right">Changes auto-save when you click away</p>
                         </div>
                     </div>
 
@@ -293,15 +351,15 @@ export default function ReviewEmails() {
                             key={idx}
                             onClick={() => setCurrentIndex(idx)}
                             className={`w-10 h-10 rounded-full font-bold transition-all ${idx === currentIndex
-                                    ? 'bg-blue-600 text-white scale-110'
-                                    : 'bg-white text-gray-600 hover:bg-gray-100'
+                                ? 'bg-blue-600 text-white scale-110'
+                                : 'bg-white text-gray-600 hover:bg-gray-100'
                                 }`}
                         >
                             {idx + 1}
                         </button>
                     ))}
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }

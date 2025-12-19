@@ -8,8 +8,9 @@ export default function OneClickOutbound() {
     const [openModal, setOpenModal] = useState(false);
 
     // Form Inputs
+    // Form Inputs
     const [industry, setIndustry] = useState('');
-    const [ctaLink, setCtaLink] = useState('');
+    const [ctaLink, setCtaLink] = useState('https://calendly.com/ajaykumarreddynelavetla/30min');
     const [valueProp, setValueProp] = useState('');
 
     useEffect(() => {

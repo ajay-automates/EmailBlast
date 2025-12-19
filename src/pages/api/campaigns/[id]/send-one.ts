@@ -43,10 +43,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         const fromEmail = userData?.email || session.user.email;
 
+        // Use SendGrid verified sender for 'from', user email for 'replyTo'
+        const senderEmail = process.env.SENDGRID_FROM_EMAIL || fromEmail;
+
         // Send via SendGrid
         const msg = {
             to: contact.email,
-            from: fromEmail,
+            from: senderEmail,
+            replyTo: fromEmail, // Replies go to the user
             subject: variation.subject,
             text: variation.body,
             html: variation.body.replace(/\n/g, '<br>')
