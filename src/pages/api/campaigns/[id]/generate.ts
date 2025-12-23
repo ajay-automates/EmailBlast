@@ -95,40 +95,60 @@ export default async function handler(
       // Generate 5 variations per contact
       for (let i = 1; i <= 5; i++) {
         try {
-          // Use custom AI prompt if provided, otherwise use default
-          const systemPrompt = campaign.ai_prompt || `You are an expert cold email copywriter. Your goal is to generate high-converting cold email variations. ${toneInstruction}`
+          // Use custom AI prompt if provided, otherwise use default with strong instructions
+          const systemPrompt = campaign.ai_prompt || `You are an expert cold email copywriter. 
+
+CRITICAL RULES:
+1. ALWAYS use the EXACT sender name provided - NEVER use placeholders
+2. Include company information naturally in the email body
+3. Mention specific services or results when relevant to the recipient
+4. ${toneInstruction}
+5. Every email MUST be signed with the sender's real name and title`
 
           const userPrompt = `Generate personalized cold email variation #${i}.
 
-RECIPIENT INFO:
-- Name: ${contact.first_name} ${contact.last_name}
-- Company: ${contact.company}
-- Position: ${contact.position}
+========================================
+SENDER INFORMATION (YOU - USE THIS EXACT INFO):
+========================================
+Name: ${senderName}
+Title: ${senderTitle || 'N/A'}
+Company: ${senderCompany}
+${companyTagline ? `Tagline: ${companyTagline}` : ''}
+${senderPhone ? `Phone: ${senderPhone}` : ''}
+${calendarLink ? `Calendar: ${calendarLink}` : ''}
 
-SENDER INFO (YOU):
-- Name: ${senderName}
-- Title: ${senderTitle}
-- Company: ${senderCompany}
-- Tagline: ${companyTagline}
-${companyServices ? `- Services:\n  - ${companyServices}` : ''}
-${keyResults ? `- Key Results/Proof:\n  - ${keyResults}` : ''}
-${calendarLink ? `- Calendar Link: ${calendarLink}` : ''}
-${senderPhone ? `- Phone: ${senderPhone}` : ''}
+${companyServices ? `What We Do:\n${companyServices}` : ''}
 
-CAMPAIGN DETAILS:
-- Context: ${campaign.context}
-- Subject Line Template: ${campaign.subject_line}
-- Tone: ${campaign.tone || 'professional'}
+${keyResults ? `Our Results:\n${keyResults}` : ''}
 
-Requirements:
-- Personalize with recipient's name, company, and position
-- Be concise (50-100 words)
-- Include a clear CTA${calendarLink ? ` (use the calendar link if appropriate)` : ''}
-- Sound natural, not templated
-- Variation #${i} should have a DIFFERENT angle/hook than others
-- Follow the ${campaign.tone || 'professional'} tone
-- **Sign off with: ${senderName}${senderTitle ? `, ${senderTitle}` : ''}**
-- **Do NOT use placeholders like [Your Name] or [Company Name]. Use the real sender info provided above.**
+========================================
+RECIPIENT INFORMATION:
+========================================
+Name: ${contact.first_name} ${contact.last_name}
+Company: ${contact.company}
+Position: ${contact.position}
+
+========================================
+CAMPAIGN CONTEXT:
+========================================
+${campaign.context}
+
+Subject Line Template: ${campaign.subject_line}
+Tone: ${campaign.tone || 'professional'}
+
+========================================
+INSTRUCTIONS:
+========================================
+1. Write a ${campaign.tone || 'professional'} email to ${contact.first_name}
+2. Reference YOUR company (${senderCompany}) and what you do
+3. If relevant, mention one of your services or results
+4. Keep it 50-100 words
+5. Include a clear call-to-action${calendarLink ? ` (you can include the calendar link)` : ''}
+6. Make variation #${i} have a DIFFERENT angle than other variations
+7. SIGN OFF with your EXACT name: ${senderName}${senderTitle ? `, ${senderTitle}` : ''}
+
+CRITICAL: Do NOT use ANY placeholders like [Your Name], [Company], etc. 
+Use the REAL information provided above.
 
 Return ONLY valid JSON in this format:
 {
@@ -165,36 +185,76 @@ Return ONLY valid JSON in this format:
             if (!text) return ''
             let processed = text
 
-            const namePlaceholders = ['[Your Name]', '[My Name]', '[Sender Name]', '[Name]', '[your name]', '{{senderName}}']
-            const titlePlaceholders = ['[Your Title]', '[My Title]', '[Sender Title]', '{{senderTitle}}']
-            const companyPlaceholders = ['[Your Company]', '[My Company]', '[Sender Company]', '[Company Name]', '[your company]', '{{companyName}}']
-            const taglinePlaceholders = ['[Your Tagline]', '[Tagline]', '{{tagline}}']
-            const calendarPlaceholders = ['[Calendar Link]', '[Booking Link]', '{{calendarLink}}']
-            const phonePlaceholders = ['[Your Phone]', '[Phone]', '{{senderPhone}}']
+            // Comprehensive list of all possible placeholders
+            const namePlaceholders = [
+              '[Your Name]', '[My Name]', '[Sender Name]', '[Name]', '[your name]',
+              '{{senderName}}', 'Adjust Name', '[Adjust Name]', 'Your Name',
+              '[Insert Name]', '[SENDER_NAME]', 'SENDER_NAME'
+            ]
+            const titlePlaceholders = [
+              '[Your Title]', '[My Title]', '[Sender Title]', '{{senderTitle}}',
+              '[Your Position]', '[Position]', 'Your Title'
+            ]
+            const companyPlaceholders = [
+              '[Your Company]', '[My Company]', '[Sender Company]', '[Company Name]',
+              '[your company]', '{{companyName}}', 'Your Company', '[Company]',
+              '[INSERT_COMPANY]', 'COMPANY_NAME'
+            ]
+            const taglinePlaceholders = [
+              '[Your Tagline]', '[Tagline]', '{{tagline}}', 'Your Tagline'
+            ]
+            const calendarPlaceholders = [
+              '[Calendar Link]', '[Booking Link]', '{{calendarLink}}',
+              '[Your Calendar]', '[Schedule Link]'
+            ]
+            const phonePlaceholders = [
+              '[Your Phone]', '[Phone]', '{{senderPhone}}', '[Phone Number]',
+              'Your Phone', '[Contact Number]'
+            ]
 
+            // Replace all name placeholders
             namePlaceholders.forEach(p => {
-              processed = processed.split(p).join(senderName)
+              const regex = new RegExp(p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi')
+              processed = processed.replace(regex, senderName)
             })
 
-            titlePlaceholders.forEach(p => {
-              processed = processed.split(p).join(senderTitle)
-            })
+            // Replace title placeholders
+            if (senderTitle) {
+              titlePlaceholders.forEach(p => {
+                const regex = new RegExp(p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi')
+                processed = processed.replace(regex, senderTitle)
+              })
+            }
 
+            // Replace company placeholders
             companyPlaceholders.forEach(p => {
-              processed = processed.split(p).join(senderCompany)
+              const regex = new RegExp(p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi')
+              processed = processed.replace(regex, senderCompany)
             })
 
-            taglinePlaceholders.forEach(p => {
-              processed = processed.split(p).join(companyTagline)
-            })
+            // Replace tagline placeholders
+            if (companyTagline) {
+              taglinePlaceholders.forEach(p => {
+                const regex = new RegExp(p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi')
+                processed = processed.replace(regex, companyTagline)
+              })
+            }
 
-            calendarPlaceholders.forEach(p => {
-              processed = processed.split(p).join(calendarLink)
-            })
+            // Replace calendar placeholders
+            if (calendarLink) {
+              calendarPlaceholders.forEach(p => {
+                const regex = new RegExp(p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi')
+                processed = processed.replace(regex, calendarLink)
+              })
+            }
 
-            phonePlaceholders.forEach(p => {
-              processed = processed.split(p).join(senderPhone)
-            })
+            // Replace phone placeholders
+            if (senderPhone) {
+              phonePlaceholders.forEach(p => {
+                const regex = new RegExp(p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi')
+                processed = processed.replace(regex, senderPhone)
+              })
+            }
 
             return processed
           }
