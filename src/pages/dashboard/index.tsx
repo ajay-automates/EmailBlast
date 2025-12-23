@@ -90,6 +90,46 @@ export default function Dashboard() {
 
       <div className="max-w-6xl mx-auto px-6 pt-16">
 
+        {/* COMPANY PROFILE SECTION */}
+        <div className="mb-12 animate-[fadeIn_0.5s_ease-out]">
+          <div className="bg-gradient-to-r from-purple-50 via-blue-50 to-indigo-50 rounded-2xl p-8 border border-purple-100/50 shadow-sm">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center text-white text-2xl shadow-lg">
+                    👤
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">Company Profile</h2>
+                    <p className="text-purple-600 text-sm font-medium">Personalize your email campaigns</p>
+                  </div>
+                </div>
+                <p className="text-gray-600 mb-6 max-w-2xl">
+                  Fill in your business details once, and our AI will use them to create highly personalized emails.
+                  Include your tagline, services, key results, and calendar link for maximum impact.
+                </p>
+                <div className="flex gap-4">
+                  <Link
+                    href="/dashboard/profile"
+                    className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-blue-700 transition-all shadow-md hover:shadow-lg flex items-center gap-2"
+                  >
+                    <span>✨</span> Setup Profile
+                  </Link>
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    AI-powered website analyzer available
+                  </div>
+                </div>
+              </div>
+              <div className="hidden lg:block">
+                <div className="w-32 h-32 bg-white/50 rounded-2xl flex items-center justify-center text-6xl backdrop-blur-sm">
+                  🎯
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* V2 ONE-CLICK OUTBOUND FEATURE */}
         <OneClickOutbound />
 
