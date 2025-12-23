@@ -54,6 +54,17 @@ export default async function handler(
       return res.status(400).json({ error: 'No contacts found' })
     }
 
+
+    // Fetch user details for signature
+    const { data: userProfile } = await supabase
+      .from('users')
+      .select('name, company')
+      .eq('id', user.id)
+      .single()
+
+    const senderName = userProfile?.name || 'Adjust Name'
+    const senderCompany = userProfile?.company || ''
+
     console.log(`[Generate] Processing ${contacts.length} contacts`)
     let generated = 0
 
@@ -83,6 +94,9 @@ Position: ${contact.position}
 Subject Line Template: ${campaign.subject_line}
 Tone: ${campaign.tone || 'professional'}
 
+Sender Name: ${senderName}
+Sender Company: ${senderCompany}
+
 Requirements:
 - Personalize with their name, company, and position
 - Be concise (50-100 words)
@@ -90,6 +104,8 @@ Requirements:
 - Sound natural, not templated
 - Variation #${i} should have a DIFFERENT angle/hook than others
 - Follow the ${campaign.tone || 'professional'} tone
+- **Sign off with my name: ${senderName}**
+- **Do NOT use placeholders like [Your Name] or [Company Name]. Use the real sender info provided above.**
 
 Return ONLY valid JSON in this format:
 {
