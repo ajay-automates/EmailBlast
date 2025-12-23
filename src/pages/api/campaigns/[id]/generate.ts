@@ -135,6 +135,31 @@ Return ONLY valid JSON in this format:
 
           const parsed = JSON.parse(content)
 
+          // ---------------------------------------------------------
+          // SAFEGUARD: Post-processing to remove any stubborn placeholders
+          // ---------------------------------------------------------
+          const replacePlaceholders = (text: string) => {
+            if (!text) return ''
+            let processed = text
+
+            const namePlaceholders = ['[Your Name]', '[My Name]', '[Sender Name]', '[Name]', '[your name]']
+            const companyPlaceholders = ['[Your Company]', '[My Company]', '[Sender Company]', '[Company Name]', '[your company]']
+
+            namePlaceholders.forEach(p => {
+              processed = processed.split(p).join(senderName)
+            })
+
+            companyPlaceholders.forEach(p => {
+              processed = processed.split(p).join(senderCompany)
+            })
+
+            return processed
+          }
+
+          parsed.subject = replacePlaceholders(parsed.subject)
+          parsed.body = replacePlaceholders(parsed.body)
+          // ---------------------------------------------------------
+
           // Save variation
           await supabase
             .from('email_variations')
