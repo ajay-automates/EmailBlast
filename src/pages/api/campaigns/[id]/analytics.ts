@@ -11,7 +11,7 @@ export default async function handler(
   }
 
   try {
-    const user = await getAuthUser(req)
+    const user = await getAuthUser(req, res)
     const { id } = req.query
 
     if (typeof id !== 'string') {

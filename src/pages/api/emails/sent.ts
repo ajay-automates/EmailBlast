@@ -11,7 +11,7 @@ export default async function handler(
     }
 
     try {
-        const user = await getAuthUser(req)
+        const user = await getAuthUser(req, res)
 
         // 1. Fetch SENT logs
         const { data: sentLogs, error: sentError } = await supabase

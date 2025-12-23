@@ -7,7 +7,7 @@ export default async function handler(
   res: NextApiResponse
 ) {
   try {
-    const user = await getAuthUser(req)
+    const user = await getAuthUser(req, res)
 
     if (req.method === 'GET') {
       // Get all campaigns for user

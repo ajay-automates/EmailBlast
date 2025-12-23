@@ -21,7 +21,7 @@ export default async function handler(
       return res.status(500).json({ error: 'SendGrid API key not configured' })
     }
     sgMail.setApiKey(process.env.SENDGRID_API_KEY)
-    const user = await getAuthUser(req)
+    const user = await getAuthUser(req, res)
     const { id } = req.query
     const { variationIds } = req.body
 

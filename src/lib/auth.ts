@@ -1,18 +1,20 @@
 import { NextApiRequest, NextApiResponse } from 'next'
-import { supabase } from './supabase'
+import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
 
-import { getToken } from 'next-auth/jwt'
+export async function getAuthUser(req: NextApiRequest, res: NextApiResponse) {
+  const supabase = createPagesServerClient({ req, res })
 
-export async function getAuthUser(req: NextApiRequest) {
-  const token = await getToken({ req })
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
 
-  if (!token || !token.sub) {
+  if (!session) {
     throw new Error('Unauthorized')
   }
 
   return {
-    id: token.sub, // The user ID from NextAuth
-    email: token.email
+    id: session.user.id,
+    email: session.user.email
   }
 }
 
@@ -22,7 +24,7 @@ export async function requireAuth(
   handler: (user: any) => Promise<void>
 ) {
   try {
-    const user = await getAuthUser(req)
+    const user = await getAuthUser(req, res)
     await handler(user)
   } catch (error) {
     res.status(401).json({ error: 'Unauthorized' })
