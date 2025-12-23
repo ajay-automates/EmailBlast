@@ -55,15 +55,28 @@ export default async function handler(
     }
 
 
-    // Fetch user details for signature
+    // Fetch company profile for personalization
+    const { data: companyProfile } = await supabase
+      .from('company_profiles')
+      .select('*')
+      .eq('user_id', user.id)
+      .single()
+
+    // Fallback to users table if no company profile
     const { data: userProfile } = await supabase
       .from('users')
       .select('name, company')
       .eq('id', user.id)
       .single()
 
-    const senderName = userProfile?.name || 'Adjust Name'
-    const senderCompany = userProfile?.company || ''
+    const senderName = companyProfile?.sender_name || userProfile?.name || 'Your Name'
+    const senderTitle = companyProfile?.sender_title || ''
+    const senderCompany = companyProfile?.company_name || userProfile?.company || ''
+    const companyTagline = companyProfile?.tagline || ''
+    const companyServices = companyProfile?.services?.filter(Boolean).join('\n- ') || ''
+    const keyResults = companyProfile?.key_results?.filter(Boolean).join('\n- ') || ''
+    const calendarLink = companyProfile?.calendar_link || ''
+    const senderPhone = companyProfile?.sender_phone || ''
 
     console.log(`[Generate] Processing ${contacts.length} contacts`)
     let generated = 0
@@ -87,24 +100,34 @@ export default async function handler(
 
           const userPrompt = `Generate personalized cold email variation #${i}.
 
-Context: ${campaign.context}
-Recipient: ${contact.first_name} ${contact.last_name}
-Company: ${contact.company}
-Position: ${contact.position}
-Subject Line Template: ${campaign.subject_line}
-Tone: ${campaign.tone || 'professional'}
+RECIPIENT INFO:
+- Name: ${contact.first_name} ${contact.last_name}
+- Company: ${contact.company}
+- Position: ${contact.position}
 
-Sender Name: ${senderName}
-Sender Company: ${senderCompany}
+SENDER INFO (YOU):
+- Name: ${senderName}
+- Title: ${senderTitle}
+- Company: ${senderCompany}
+- Tagline: ${companyTagline}
+${companyServices ? `- Services:\n  - ${companyServices}` : ''}
+${keyResults ? `- Key Results/Proof:\n  - ${keyResults}` : ''}
+${calendarLink ? `- Calendar Link: ${calendarLink}` : ''}
+${senderPhone ? `- Phone: ${senderPhone}` : ''}
+
+CAMPAIGN DETAILS:
+- Context: ${campaign.context}
+- Subject Line Template: ${campaign.subject_line}
+- Tone: ${campaign.tone || 'professional'}
 
 Requirements:
-- Personalize with their name, company, and position
+- Personalize with recipient's name, company, and position
 - Be concise (50-100 words)
-- Include a clear CTA
+- Include a clear CTA${calendarLink ? ` (use the calendar link if appropriate)` : ''}
 - Sound natural, not templated
 - Variation #${i} should have a DIFFERENT angle/hook than others
 - Follow the ${campaign.tone || 'professional'} tone
-- **Sign off with my name: ${senderName}**
+- **Sign off with: ${senderName}${senderTitle ? `, ${senderTitle}` : ''}**
 - **Do NOT use placeholders like [Your Name] or [Company Name]. Use the real sender info provided above.**
 
 Return ONLY valid JSON in this format:
@@ -142,15 +165,35 @@ Return ONLY valid JSON in this format:
             if (!text) return ''
             let processed = text
 
-            const namePlaceholders = ['[Your Name]', '[My Name]', '[Sender Name]', '[Name]', '[your name]']
-            const companyPlaceholders = ['[Your Company]', '[My Company]', '[Sender Company]', '[Company Name]', '[your company]']
+            const namePlaceholders = ['[Your Name]', '[My Name]', '[Sender Name]', '[Name]', '[your name]', '{{senderName}}']
+            const titlePlaceholders = ['[Your Title]', '[My Title]', '[Sender Title]', '{{senderTitle}}']
+            const companyPlaceholders = ['[Your Company]', '[My Company]', '[Sender Company]', '[Company Name]', '[your company]', '{{companyName}}']
+            const taglinePlaceholders = ['[Your Tagline]', '[Tagline]', '{{tagline}}']
+            const calendarPlaceholders = ['[Calendar Link]', '[Booking Link]', '{{calendarLink}}']
+            const phonePlaceholders = ['[Your Phone]', '[Phone]', '{{senderPhone}}']
 
             namePlaceholders.forEach(p => {
               processed = processed.split(p).join(senderName)
             })
 
+            titlePlaceholders.forEach(p => {
+              processed = processed.split(p).join(senderTitle)
+            })
+
             companyPlaceholders.forEach(p => {
               processed = processed.split(p).join(senderCompany)
+            })
+
+            taglinePlaceholders.forEach(p => {
+              processed = processed.split(p).join(companyTagline)
+            })
+
+            calendarPlaceholders.forEach(p => {
+              processed = processed.split(p).join(calendarLink)
+            })
+
+            phonePlaceholders.forEach(p => {
+              processed = processed.split(p).join(senderPhone)
             })
 
             return processed
