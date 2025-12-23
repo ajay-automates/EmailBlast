@@ -1,399 +1,159 @@
-# 🚀 EmailBlast - AI Email Outreach Automation
+# 🚀 EmailBlast - AI-Powered Email Automation SaaS
 
-**Status:** 100% COMPLETE - SaaS-Ready ✅  
-**Ready for:** Production Launch / Client Demos / Consultancy Outreach
-
-A complete, production-ready email outreach automation platform built with Next.js, Supabase, Claude AI, SendGrid, and Stripe. Designed to generate, send, and track personalized cold emails at scale **safely and professionally**.
-
----
-
-## 🎯 What This Does
-
-**For Consultancy Outreach:**
-
-- Upload CSV of prospects → AI generates 5 personalized variations per contact
-- Sends 30-50 emails/day automatically (protects your domain)
-- Auto-detects replies and stops follow-ups (prevents double-messaging)
-- One-click unsubscribe in every email (legal compliance)
-- Real-time analytics dashboard
-
-**For SaaS Product:**
-
-- Complete authentication & payment system
-- User dashboard with campaign management
-- Stripe subscriptions (Free/Pro/Business tiers)
-- Professional landing page
-- Privacy Policy & Terms of Service
+**Production-Ready SaaS Platform**  
+**Version:** 2.0 (SaaS Ready)  
+**Status:** ✅ Live & Deployed
 
 ---
 
-## ✅ Complete Feature List
+## 📖 Overview
 
-### 🔐 Safety & Compliance (P1)
+EmailBlast is a professional, full-stack SaaS platform designed for high-conversion cold email outreach. It leverages AI (GPT-4/Claude) to generate personalized email variations, SendGrid for delivery, and Supabase for data management.
 
-- ✅ **Reply Detection** - Auto-stops follow-ups when someone replies
-- ✅ **Unsubscribe System** - One-click unsubscribe with beautiful confirmation page
-- ✅ **Bounce Suppression** - Auto-marks bounced emails, never contacts them again
-- ✅ **Daily Send Limits** - Respects daily caps (default: 50/day), queues excess
-- ✅ **Gradual Sending** - Spreads emails throughout day (15-30 min intervals)
+### Key Features
 
-### 🎨 Professional Features (P2)
-
-- ✅ **Campaign Cloning** - Duplicate campaigns in seconds
-- ✅ **Email Preview** - See exact email before sending, send test to yourself
-- ✅ **AI Prompt Control** - Custom system prompts per campaign
-- ✅ **Tone Selector** - Professional / Direct / Friendly
-- ✅ **Queue Management** - View pending, sent, failed emails
-
-### 🤖 Core AI Engine
-
-- ✅ **AI Personalization** - Claude AI generates 5 unique variations per contact
-- ✅ **Smart Personalization** - Uses name, company, position, context
-- ✅ **Subject Line Generation** - AI creates compelling subjects
-- ✅ **Variation Diversity** - Each variation has different angle/hook
-
-### 📊 Analytics & Tracking
-
-- ✅ **Real-time Dashboard** - Opens, clicks, replies tracked live
-- ✅ **SendGrid Webhooks** - Automatic event processing
-- ✅ **Contact Status** - Replied/Unsubscribed/Bounced badges
-- ✅ **Campaign Stats** - Open rate, click rate, reply rate
-
-### 💳 Business Features
-
-- ✅ **Stripe Payments** - Subscription billing
-- ✅ **User Authentication** - NextAuth.js with JWT
-- ✅ **Landing Page** - High-conversion marketing page
-- ✅ **Legal Pages** - Privacy Policy & Terms of Service
+* **🤖 AI Personalization:** Generates 5 unique, context-aware email variations per contact.
+* **📧 Smart Sending:** Queue-based sending with daily limits, reply detection, and bounce suppression.
+* **📊 Real-Time Analytics:** Tracks opens, clicks, replies, and bounces instantly.
+* **🛡️ Production Grade:** Includes authentication (Supabase), payments (Stripe), and legal compliance pages.
+* **🧪 A/B Testing:** Automatically varies subject lines and content hooks.
 
 ---
 
-## 🏗️ Tech Stack
+## 🛠️ Tech Stack
 
-- **Frontend:** Next.js 14, React, Tailwind CSS, TypeScript
-- **Backend:** Next.js API Routes, Node.js
-- **Database:** Supabase (PostgreSQL)
-- **AI:** Anthropic Claude (Haiku)
-- **Email:** SendGrid API
-- **Payments:** Stripe
-- **Auth:** NextAuth.js
-- **Hosting:** Vercel-ready
+* **Frontend:** Next.js 14, React, TypeScript, Tailwind CSS
+* **Backend:** Next.js API Routes, Node.js
+* **Database:** Supabase (PostgreSQL)
+* **AI Engine:** Anthropic Claude 3 Haiku / OpenAI
+* **Email Infrastructure:** SendGrid
+* **Payments:** Stripe
+* **Hosting:** Vercel
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Getting Started (Local Development)
 
 ### 1. Prerequisites
 
-- Node.js 18+
-- Supabase account
-- SendGrid account (verified sender)
-- Anthropic API key
-- Stripe account (optional)
+* Node.js 18+
+* npm
+* Supabase Account
+* SendGrid Account
+* Anthropic/OpenAI API Key
 
-### 2. Clone & Install
+### 2. Installation
 
 ```bash
-git clone <your-repo>
-cd EmailBlast
+# Install dependencies
 npm install
+
+# Setup environment variables
+cp .env.local.example .env.local
+# (Populate .env.local with your keys, see below)
 ```
 
-### 3. Database Setup
+### 3. Environment Variables
 
-1. Create Supabase project
-2. Run `schema.sql` in SQL Editor
-3. Run `migration-saas-ready.sql` for new features
-4. Get API keys from Settings → API
-
-### 4. Environment Setup
-
-Create `.env.local`:
+Create a `.env.local` file with the following:
 
 ```env
-# Database
-NEXT_PUBLIC_SUPABASE_URL=your-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-key
-SUPABASE_SERVICE_KEY=your-service-key
+# Database (Supabase)
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_KEY=your-service-role-key
 
-# AI
-ANTHROPIC_API_KEY=your-key
+# AI (Anthropic)
+ANTHROPIC_API_KEY=sk-ant-...
 
-# Email
-SENDGRID_API_KEY=your-key
-SENDGRID_FROM_EMAIL=verified@yourdomain.com
+# Email (SendGrid)
+SENDGRID_API_KEY=SG....
+SENDGRID_FROM_EMAIL=you@yourdomain.com
 
-# Auth
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-secret
-
-# Payments (optional)
-STRIPE_SECRET_KEY=sk_test_...
-
-# Cron (for queue processing)
-CRON_SECRET=your-random-secret
-
-# Base URL (for unsubscribe links)
+# App URL (Critical for Unsubscribe links)
 NEXT_PUBLIC_URL=http://localhost:3000
+
+# Payments (Stripe - Optional for Dev)
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
 ```
 
-### 5. SendGrid Configuration
+### 4. Database Setup
 
-1. **Verify Sender:** Settings → Sender Authentication
-2. **Inbound Parse:** Settings → Inbound Parse
-   - Domain: `reply.yourdomain.com`
-   - URL: `https://yourdomain.com/api/webhooks/sendgrid-inbound`
-3. **Event Webhook:** Settings → Mail Send → Event Webhook
-   - URL: `https://yourdomain.com/api/webhooks/sendgrid`
-   - Events: Opens, Clicks, Bounces, Delivered
+Run the following SQL in your Supabase SQL Editor:
 
-### 6. Cron Job Setup
+1. Run `schema.sql` (Creates core tables)
+2. Run `migration-saas-ready.sql` (Adds reply detection & queueing)
 
-**Option A: Vercel Cron** (Recommended)
-Create `vercel.json`:
-
-```json
-{
-  "crons": [{
-    "path": "/api/cron/process-queue",
-    "schedule": "*/15 * * * *"
-  }]
-}
-```
-
-**Option B: External Cron Service**
-
-- Service: cron-job.org or EasyCron
-- URL: `https://yourdomain.com/api/cron/process-queue?secret=your-secret`
-- Schedule: `*/15 * * * *` (every 15 minutes)
-
-### 7. Run Locally
+### 5. Run Locally
 
 ```bash
 npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000)
-
----
-
-## 📖 Usage Guide
-
-### For Consultancy Outreach
-
-**Step 1: Create Campaign**
-
-- Name: "AI Automation - Founder Outreach"
-- Subject: "Quick question about [Company]'s automation"
-- Context: "I help B2B SaaS automate workflows. Looking to book calls."
-- Tone: Direct
-- Daily Limit: 30
-
-**Step 2: Upload Contacts**
-
-- CSV format: FirstName, LastName, Email, Company, Position
-- Upload 50-100 prospects
-
-**Step 3: Generate Emails**
-
-- Select all contacts
-- Click "Generate"
-- AI creates 5 variations per contact
-
-**Step 4: Preview & Test**
-
-- Preview for 1-2 contacts
-- Send test to yourself
-- Verify personalization
-
-**Step 5: Queue & Send**
-
-- Select variations
-- Click "Send"
-- System queues 30/day
-- Cron sends gradually
-
-**Step 6: Monitor**
-
-- Check dashboard daily
-- Look for "Replied" badges
-- Follow up manually
-
----
-
-## 📊 Expected Results
-
-### Benchmarks
-
-- **Open Rate:** 30-50% (vs 5-10% industry)
-- **Reply Rate:** 5-10% (vs 1-2% industry)
-- **Meetings:** 2-5 per 100 emails
-
-### Why It Works
-
-✅ AI personalization (not templates)  
-✅ Gradual sending (not spam-like)  
-✅ Auto-stops on reply (professional)  
-✅ Clean unsubscribe (builds trust)  
-✅ Daily limits (protects domain)
-
----
-
-## 🔧 API Endpoints
-
-### Campaigns
-
-- `GET /api/campaigns` - List campaigns
-- `POST /api/campaigns` - Create campaign
-- `GET /api/campaigns/[id]` - Get campaign
-- `PUT /api/campaigns/[id]` - Update campaign
-- `DELETE /api/campaigns/[id]` - Delete campaign
-- `POST /api/campaigns/[id]/clone` - Clone campaign
-
-### Email Operations
-
-- `POST /api/campaigns/[id]/contacts` - Upload CSV
-- `POST /api/campaigns/[id]/generate` - Generate emails
-- `POST /api/campaigns/[id]/send` - Queue emails
-- `GET /api/campaigns/[id]/preview` - Preview email
-- `POST /api/campaigns/[id]/preview` - Send test
-
-### Analytics
-
-- `GET /api/campaigns/[id]/analytics` - Get stats
-
-### Webhooks
-
-- `POST /api/webhooks/sendgrid` - Event tracking
-- `POST /api/webhooks/sendgrid-inbound` - Reply detection
-
-### Public
-
-- `GET /api/unsubscribe/[contactId]` - Unsubscribe page
-
-### Cron
-
-- `POST /api/cron/process-queue` - Process send queue
-
----
-
-## 📁 Project Structure
-
-```
-EmailBlast/
-├── src/
-│   ├── pages/
-│   │   ├── api/
-│   │   │   ├── campaigns/      # Campaign CRUD + operations
-│   │   │   ├── auth/           # NextAuth endpoints
-│   │   │   ├── stripe/         # Payment endpoints
-│   │   │   ├── webhooks/       # SendGrid webhooks
-│   │   │   ├── unsubscribe/    # Public unsubscribe
-│   │   │   └── cron/           # Queue processor
-│   │   ├── dashboard/          # Protected app pages
-│   │   ├── auth/               # Login/signup pages
-│   │   └── index.tsx           # Landing page
-│   └── lib/
-│       ├── supabase.ts         # DB client
-│       ├── auth.ts             # Auth helpers
-│       ├── stripe.ts           # Payment helpers
-│       └── send-queue.ts       # Queue management
-├── schema.sql                  # Initial DB schema
-├── migration-saas-ready.sql    # New features migration
-├── SAAS_READY_REPORT.md        # Complete feature docs
-└── README.md                   # This file
+# Visit http://localhost:3000/dashboard
 ```
 
 ---
 
-## 🐛 Troubleshooting
+## 📦 Deployment Guide (Vercel)
 
-### Emails Not Sending
+1. **Push to GitHub:** Ensure your repo is up to date.
+2. **Import to Vercel:** Select your repository.
+3. **Environment Variables:** Add all variables from `.env.local` to Vercel Project Settings.
+    * **CRITICAL:** Set `NEXT_PUBLIC_URL` to your production domain (e.g., `https://email-blast.vercel.app`).
+    * Add `CRON_SECRET` (random string) for securing cron jobs.
+4. **Deploy:** Click "Deploy".
 
-- ✅ Verify sender in SendGrid
-- ✅ Check `SENDGRID_API_KEY` is correct
-- ✅ Check `SENDGRID_FROM_EMAIL` matches verified sender
+### Post-Deployment Configuration
 
-### Replies Not Detected
+1. **SendGrid Inbound Parse (For Reply Detection):**
+    * Settings -> Inbound Parse -> Add Host & URL.
+    * URL: `https://your-domain.vercel.app/api/webhooks/sendgrid-inbound`
+    * Check "POST the raw, full MIME message".
 
-- ✅ Setup Inbound Parse in SendGrid
-- ✅ Verify webhook URL is correct
-- ✅ Check webhook logs in SendGrid
-
-### Queue Not Processing
-
-- ✅ Verify cron job is running
-- ✅ Check `CRON_SECRET` matches
-- ✅ View logs in Vercel or cron service
-
-### Unsubscribe Not Working
-
-- ✅ Check `NEXT_PUBLIC_URL` is set
-- ✅ Verify contact ID is valid
-- ✅ Check database permissions
+2. **Cron Jobs (Queue Processing):**
+    * The project includes `vercel.json` for Vercel Cron.
+    * It calls `/api/cron/process-queue` every 15 minutes to send queued emails.
 
 ---
 
-## 📚 Documentation
+## 📂 Project Structure
 
-- **`SAAS_READY_REPORT.md`** - Complete feature documentation
-- **`SAAS_COMPLETION_PLAN.md`** - Implementation roadmap
-- **`schema.sql`** - Database schema
-- **`migration-saas-ready.sql`** - Migration script
-
----
-
-## 🎯 What Makes This SaaS-Ready
-
-### Before (95%)
-
-❌ Could double-message  
-❌ No unsubscribe  
-❌ Could burn domain  
-❌ Manual setup  
-
-### After (100%)
-
-✅ Auto-stops on reply  
-✅ One-click unsubscribe  
-✅ Daily limits + queue  
-✅ Clone campaigns  
-✅ Preview + test  
-✅ Custom AI prompts  
+```
+src/
+├── pages/
+│   ├── api/            # Backend API Routes
+│   │   ├── auth/       # Authentication (Signup/Login)
+│   │   ├── campaigns/  # Campaign CRUD & Sending logic
+│   │   ├── cron/       # Scheduled tasks (Queue processing)
+│   │   └── webhooks/   # Stripe & SendGrid listeners
+│   ├── dashboard/      # Protected App Pages
+│   └── index.tsx       # Landing Page
+├── lib/                # Shared utilities (Auth, DB, Stripe)
+├── components/         # React Components
+└── styles/             # Global CSS & Tailwind
+```
 
 ---
 
-## 🏆 Launch Checklist
+## 🛡️ Operational Guide
 
-- [ ] Run database migrations
-- [ ] Setup SendGrid webhooks
-- [ ] Setup cron job
-- [ ] Send test campaign
-- [ ] Verify reply detection
-- [ ] Test unsubscribe
-- [ ] Monitor queue processing
-- [ ] Deploy to Vercel
+### How to Send a Campaign
 
----
+1. **Create Campaign:** Dashboard -> New Campaign.
+2. **Upload Contacts:** CSV format (must include `email`, optional: `first_name`, `company`).
+3. **Generate:** Click "Generate" tab. AI will create personalized emails per contact.
+4. **Review:** Check the generated emails.
+5. **Send:** Click "Send All".
+    * *Note:* Emails go to the **Send Queue**.
+    * The background Cron Job picks them up every 15m (respecting daily limits).
 
-## 📞 Support
+### Troubleshooting
 
-For issues:
-
-1. Check Vercel logs
-2. Check Supabase logs
-3. Check SendGrid event history
-4. Review `SAAS_READY_REPORT.md`
+* **"Failed to add contact":** Check if you are using the real "Sign Up" flow vs. a mock user.
+* **Emails not sending:** Check `send_queue` table in Supabase. If status is `pending`, check if Cron Job is running.
+* **Unsubscribe links broken:** Verify `NEXT_PUBLIC_URL` is set in Vercel.
 
 ---
 
-**Built for the creator economy** 🚀
-
-**Ready to launch? Let's go!**
-
----
-
-*Last Updated: December 15, 2025*
-
-
-<!-- Last Deployed: 12/16/2025 10:03:34 -->
+**Built with ❤️ for High-Performance Outreach**
