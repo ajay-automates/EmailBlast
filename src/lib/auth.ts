@@ -1,12 +1,18 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { supabase } from './supabase'
 
+import { getToken } from 'next-auth/jwt'
+
 export async function getAuthUser(req: NextApiRequest) {
-  // TODO: Re-enable real auth when login pages are built (Week 9-10)
-  // For now, return a mock user to allow testing the app
+  const token = await getToken({ req })
+
+  if (!token || !token.sub) {
+    throw new Error('Unauthorized')
+  }
+
   return {
-    id: '11111111-1111-1111-1111-111111111111',
-    email: 'test@example.com'
+    id: token.sub, // The user ID from NextAuth
+    email: token.email
   }
 }
 
