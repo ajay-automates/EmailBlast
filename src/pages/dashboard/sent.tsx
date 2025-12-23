@@ -52,7 +52,7 @@ export default function SentEmails() {
                     <div className="flex items-center gap-8 text-sm font-medium text-gray-500">
                         <Link href="/dashboard" className="hover:text-primary transition-colors">Campaigns</Link>
                         <Link href="/dashboard/sent" className="text-gray-900 hover:text-primary transition-colors">History</Link>
-                        <Link href="/dashboard/profile" className="hover:text-primary transition-colors">Profile</Link>
+                        <Link href="/dashboard/profile" className="hover:text-primary transition-colors">Company</Link>
                         <Link href="/dashboard/settings" className="hover:text-primary transition-colors">Settings</Link>
                         <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 shadow-inner" />
                     </div>
